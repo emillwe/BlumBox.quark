@@ -1,0 +1,46 @@
+class:: BlumRotate
+summary:: Panning for stereo signals without adjusting relative gains.
+related:: // other stereo imaging transforms here
+categories:: // TODO
+
+
+Description::
+
+Positions (or repositions) a stereo signal in the stereo image.
+Wrapper for link::Classes/Rotate2 with a single stereo input and position oriented looking along the x-axis.
+
+subsection:: // Other stereo transforms
+
+LIST::
+// Other stereo transforms
+
+
+classmethods::
+
+method::ar, kr
+
+argument::in
+Stereo input signal.
+note:: // TODO: constraints on input
+
+argument::angle
+Rotation angle in degrees.
+Sampled at audio-rate.
+note::rotation values should be within the range +-180 degrees.:: // TODO: Wrap feature
+
+Examples::
+
+code::
+
+(
+{
+    // rotation via lfo
+    var x, y;
+    x = PinkNoise.ar(0.4);
+    y = LFTri.ar(LFNoise0.kr(8).range(500, 1000)) * LFPulse.kr(8,0,0.3,0.2);
+	BlumRotate.ar([x, y], LFSaw.kr(0.1).range(-180, 180));
+}.play;
+)
+
+::
+
