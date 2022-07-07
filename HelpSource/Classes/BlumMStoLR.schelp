@@ -1,4 +1,4 @@
-TITLE:: BlumRotate
+TITLE:: BlumMStoLR
 summary:: (put short description here)
 categories:: Undocumented classes, UGens>Undocumented
 related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
@@ -15,18 +15,12 @@ METHOD:: kr
 ARGUMENT:: in
 (describe argument here)
 
-ARGUMENT:: angle
-(describe argument here)
-
 returns:: (describe returnvalue here)
 
 METHOD:: ar
 (describe method here)
 
 ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
 (describe argument here)
 
 returns:: (describe returnvalue here)

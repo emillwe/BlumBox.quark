@@ -1,6 +1,6 @@
-TITLE:: BlumRotate
+TITLE:: BlumUGen
 summary:: (put short description here)
-categories:: Undocumented classes, UGens>Undocumented
+categories:: Undocumented classes
 related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
 
 DESCRIPTION::
@@ -9,24 +9,10 @@ DESCRIPTION::
 
 CLASSMETHODS::
 
-METHOD:: kr
+METHOD:: makeStereo
 (describe method here)
 
 ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: ar
-(describe method here)
-
-ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
 (describe argument here)
 
 returns:: (describe returnvalue here)
