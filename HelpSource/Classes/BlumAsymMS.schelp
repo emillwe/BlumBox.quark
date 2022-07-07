@@ -1,0 +1,42 @@
+TITLE:: BlumAsymMS
+summary:: (put short description here)
+categories:: Undocumented classes, UGens>Undocumented
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: kr
+(describe method here)
+
+ARGUMENT:: in
+(describe argument here)
+
+ARGUMENT:: angle
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: in
+(describe argument here)
+
+ARGUMENT:: angle
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
