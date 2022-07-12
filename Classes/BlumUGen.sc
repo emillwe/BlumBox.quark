@@ -22,11 +22,13 @@ BlumUGen {
 	*makeStereo { |in|
 		// ensure input has 2 channels
 		(in.numChannels != 2).if {
-			^NumChannels.ar(
-				input: in,
-				numChannels: 2,
-				mixdown: true
-			);
+			// ^NumChannels.ar(
+			// 	// input: in,
+			// 	input: 2.sqrt.reciprocal * in,
+			// 	numChannels: 2,
+			// 	mixdown: true
+			// );
+			^((2.sqrt.reciprocal * in).dup(2))
 		}
     }
 }
@@ -123,6 +125,8 @@ BlumMStoLR : BlumUGen {
 	}
 }
 
+// TODO: Sin-Cos pan, panMS
+
 //-----------------------------------------------------------------------
 // wrapper for Rotate2, using stereo input and degree arguments
 
@@ -141,6 +145,7 @@ For a mono signal, BlumRotate acts as a simple panner.
 BlumRotate : BlumUGen {
 	*ar { |in, angle|
 		// TODO: wrap angle inside bounds [+= 180]
+		// e.g. while angle >= 360, angle %= 360 . . .
 
 		// normalize degrees for Rotate2 pos argument
 		var pos = angle / -180.0;
