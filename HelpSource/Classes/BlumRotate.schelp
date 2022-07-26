@@ -1,24 +1,12 @@
 TITLE:: BlumRotate
-summary:: (put short description here)
-categories:: Undocumented classes, UGens>Undocumented
-related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+summary:: Stereo rotation transform
+categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel>Panners
+related:: Classes/BlumBalance, Classes/BlumWidth
 
 DESCRIPTION::
-(put long description here)
-
+Rotation is a true stereo panning algorithm, accepting a stereo input and returning a stereo output. It is the stereo equivalent of the sine-cosine panning law. In the cartesian plane, if the listener is facing 0 degrees, rotation orients a stereo signal
 
 CLASSMETHODS::
-
-METHOD:: kr
-(describe method here)
-
-ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
-(describe argument here)
-
-returns:: (describe returnvalue here)
 
 METHOD:: ar
 (describe method here)
@@ -31,6 +19,16 @@ ARGUMENT:: angle
 
 returns:: (describe returnvalue here)
 
+METHOD:: kr
+(describe method here)
+
+ARGUMENT:: in
+(describe argument here)
+
+ARGUMENT:: angle
+(describe argument here)
+
+returns:: (describe returnvalue here)
 
 INSTANCEMETHODS::
 

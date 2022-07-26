@@ -19,18 +19,20 @@ from "Classic Stereo Imaging Transforms--A Review", by Dr. Joseph Anderson
 */
 
 BlumUGen {
-	*makeStereo { |in|
-		// ensure input has 2 channels
-		(in.numChannels != 2).if {
-			// ^NumChannels.ar(
-			// 	// input: in,
-			// 	input: 2.sqrt.reciprocal * in,
-			// 	numChannels: 2,
-			// 	mixdown: true
-			// );
-			^((2.sqrt.reciprocal * in).dup(2))
-		}
-    }
+	*confirmStereoInputs { |in|
+		var inNumChannels;
+		var stereoNumChannels = 2;  // stereo will be 2
+
+		inNumChannels = in.numChannels;
+		if(inNumChannels != stereoNumChannels, {
+			Error(
+				"[BlumUGen] In number of channels (%) does not match expected numInputs (%).".format(inNumChannels, stereoNumChannels)
+			).errorString.postln;
+			this.halt
+		});
+
+		^inNumChannels
+	}
 }
 
 //-----------------------------------------------------------------------
@@ -46,14 +48,17 @@ MS signal
 
 BlumLRtoMS : BlumUGen {
 	*ar { |in|
-		var mid, side;
+		var left, right;
 		var sum, diff;
+		var mid, side;
 
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		sum = in[0] + in[1];
-		diff = in[0] - in[1];
+		#left, right = in;
+
+		sum = left + right;
+		diff = left - right;
 
 		mid = 2.sqrt.reciprocal * sum;
 		side = 2.sqrt.reciprocal * diff;
@@ -62,20 +67,22 @@ BlumLRtoMS : BlumUGen {
 	}
 
 	*kr { |in|
-		var mid, side;
+		var left, right;
 		var sum, diff;
+		var mid, side;
 
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		sum = in[0] + in[1];
-		diff = in[0] - in[1];
+		#left, right = in;
+
+		sum = left + right;
+		diff = left - right;
 
 		mid = 2.sqrt.reciprocal * sum;
 		side = 2.sqrt.reciprocal * diff;
 
 		^[mid, side];
-
 	}
 }
 
@@ -95,11 +102,13 @@ BlumMStoLR : BlumUGen {
 		var left, right;
 		var sum, diff;
 
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
 
-		sum = in[0] + in[1];
-		diff = in[0] - in[1];
+		#left, right = in;
+
+		sum = left + right;
+		diff = left - right;
 
 		left = 2.sqrt.reciprocal * sum;
 		right = 2.sqrt.reciprocal * diff;
@@ -111,17 +120,18 @@ BlumMStoLR : BlumUGen {
 		var left, right;
 		var sum, diff;
 
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
 
-		sum = in[0] + in[1];
-		diff = in[0] - in[1];
+		#left, right = in;
+
+		sum = left + right;
+		diff = left - right;
 
 		left = 2.sqrt.reciprocal * sum;
 		right = 2.sqrt.reciprocal * diff;
 
 		^[left, right];
-
 	}
 }
 
@@ -144,26 +154,57 @@ For a mono signal, BlumRotate acts as a simple panner.
 
 BlumRotate : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
+
 		// TODO: wrap angle inside bounds [+= 180]
 		// e.g. while angle >= 360, angle %= 360 . . .
 
 		// normalize degrees for Rotate2 pos argument
 		var pos = angle / -180.0;
 
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		^Rotate2.ar(in[0], in[1], pos);
+		#left, right = in;
+
+		^Rotate2.ar(left, right, pos);
+	}
+
+	// MS input/output
+	*arMS {|in, angle|
+		var inM, inS;
+		var rotM, rotS;
+		var rads;
+
+		// convert to radians
+		rads = angle.degrad;
+
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
+
+		#inM, inS = in;
+
+		rotM = (rads.cos * inM) - (rads.sin * inS);
+		rotS = (rads.cos * inM) + (rads.sin * inS);
+
+		^[rotM, rotS];
 	}
 
 	*kr { |in, angle|
-		// TODO: wrap angle inside bounds
+		var left, right;
+
+		// TODO: wrap angle inside bounds [+= 180]
+		// e.g. while angle >= 360, angle %= 360 . . .
+
+		// normalize degrees for Rotate2 pos argument
 		var pos = angle / -180.0;
 
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		^Rotate2.kr(in[0], in[1], pos);
+		#left, right = in;
+
+		^Rotate2.kr(left, right, pos);
 	}
 }
 
@@ -183,37 +224,59 @@ stereo widened/narrowed signal
 
 BlumWidth : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
 		var widthL, widthR;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		widthL = (in[0] * rads.cos) - (in[1] * rads.sin);
-		widthR = (in[0] * rads.sin).neg + (in[1] * rads.cos);
+		#left, right = in;
+
+		widthL = (rads.cos * left) - (rads.sin * right);
+		widthR = (rads.sin.neg * left) + (rads.cos * right);
 
 		^[widthL, widthR]
 	}
 
+	// MS input/output
+	*arMS {|in, angle|
+		var inM, inS;
+		var widthM, widthS;
+		var rads;
+
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
+
+		#inM, inS = in;
+
+		// convert to radians
+		rads = angle.degrad;
+
+		widthM = 2.sqrt * ((45 - angle).degrad).sin * inM;
+		widthS = 2.sqrt * ((45 - angle).degrad).cos * inS;
+
+		^[widthM, widthS];
+	}
+
 	*kr { |in, angle|
+		var left, right;
 		var widthL, widthR;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		widthL = (in[0] * rads.cos) - (in[1] * rads.sin);
-		widthR = (in[0] * rads.sin).neg + (in[1] * rads.cos);
+		#left, right = in;
+
+		widthL = (rads.cos * left) - (rads.sin * right);
+		widthR = (rads.sin * left).neg + (rads.cos * right);
 
 		^[widthL, widthR]
 	}
@@ -235,35 +298,51 @@ stereo balanced signal
 
 BlumBalance : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
 		var balL, balR;
-		var rads;
 
-		// TODO: wrap angle?
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		#left, right = in;
 
-		balL = in[0] * 2.sqrt * ((45 - angle).degrad).cos;
-		balR = in[1] * 2.sqrt * ((45 - angle).degrad).sin;
+		balL = 2.sqrt * ((45 - angle).degrad).cos * left;
+		balR = 2.sqrt * ((45 - angle).degrad).sin * right;
 
 		^[balL, balR]
 	}
 
-	*kr { |in, angle|
-		var balL, balR;
+	*arMS {|in, angle|
+		var inM, inS;
+		var balM, balS;
 		var rads;
 
-		// TODO: wrap angle?
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		inM = in[0];
+		inS = in[1];
 
-		balL = in[0] * 2.sqrt * ((45 - angle).degrad).cos;
-		balR = in[1] * 2.sqrt * ((45 - angle).degrad).sin;
+		// convert to radians
+		rads = angle.degrad;
+
+		balM = (rads.cos * inM) + (rads.sin * inS);
+		balS = (rads.sin * inM) + (rads.cos * inS);
+
+		^[balM, balS];
+	}
+
+	*kr { |in, angle|
+		var left, right;
+		var balL, balR;
+
+		// check input is stereo
+		this.confirmStereoInputs(in);
+
+		#left, right = in;
+
+		balL = 2.sqrt * ((45 - angle).degrad).cos * left;
+		balR = 2.sqrt * ((45 - angle).degrad).sin * right;
 
 		^[balL, balR]
 	}
@@ -283,18 +362,16 @@ M-panned MS signal in the format [M, S]
 TODO: include BlumMPanLR? name just BlumMPan?
 */
 
-BlumMPanMS : BlumUGen {
-	*ar { |in, angle|
+BlumMPan : BlumUGen {
+	*arMS { |in, angle|
 		var mPanM, mPanS;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
 
 		mPanM = in[0] * rads.cos;
 		mPanS = in[0] * rads.sin + in[1];
@@ -302,23 +379,36 @@ BlumMPanMS : BlumUGen {
 		^[mPanM, mPanS]
 	}
 
+	*ar { |in, angle|
+		var msSig;
+
+		// check input is stereo
+		this.confirmStereoInputs(in);
+
+		// convert to MS domain
+		msSig = BlumLRtoMS.ar(in);
+
+		// apply transformation
+		msSig = BlumMPan.arMS(msSig, angle);
+
+		// convert back to LR domain
+		^BlumMStoLR.ar(msSig);
+	}
+
 	*kr { |in, angle|
-		var mPanM, mPanS;
-		var rads;
+		var msSig;
 
-		// TODO: wrap angle?
-		rads = angle.degrad;
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		// TODO: transform to LR and back?
-		in = BlumUGen.makeStereo(in);
+		// convert to MS domain
+		msSig = BlumLRtoMS.kr(in);
 
-		mPanM = in[0] * rads.cos;
-		mPanS = in[0] * rads.sin + in[1];
+		// apply transformation
+		msSig = BlumMPan.arMS(msSig, angle);
 
-		^[mPanM, mPanS]
+		// convert back to LR domain
+		^BlumMStoLR.kr(msSig);
 	}
 }
 
@@ -336,43 +426,55 @@ Asymmetry-transformed MS signal in the format [M, S]
 TODO: include BlumMPanLR? name just BlumMPan?
 */
 
-BlumAsymMS : BlumUGen {
-	*ar { |in, angle|
+BlumAsym : BlumUGen {
+	*arMS { |in, angle|
 		var asymM, asymS;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		// TODO: transform to LR and back?
-		in = BlumUGen.makeStereo(in);
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
 
 		asymM = in[0] - (in[1] * rads.sin);
 		asymS = in[1] * rads.cos;
 
-		^[asymM, asymS];
+		^[asymM, asymS]
+	}
+
+	*ar { |in, angle|
+		var msSig;
+		var asymM, asymS;
+
+		// check input is stereo
+		this.confirmStereoInputs(in);
+
+		// convert to MS domain
+		msSig = BlumLRtoMS.ar(in);
+
+		// apply transformation
+		msSig = BlumAsym.arMS(msSig, angle);
+
+		// convert back to LR domain
+		^BlumMStoLR.ar(msSig);
 	}
 
 	*kr { |in, angle|
+		var msSig;
 		var asymM, asymS;
-		var rads;
 
-		// TODO: wrap angle?
-		rads = angle.degrad;
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		// TODO: transform to LR and back?
-		in = BlumUGen.makeStereo(in);
+		// convert to MS domain
+		msSig = BlumLRtoMS.kr(in);
 
-		asymM = in[0] - (in[1] * rads.sin);
-		asymS = in[1] * rads.cos;
+		// apply transformation
+		msSig = BlumAsym.arMS(msSig, angle);
 
-		^[asymM, asymS];
+		// convert back to LR domain
+		^BlumMStoLR.kr(msSig);
 	}
 }
 
@@ -393,13 +495,11 @@ BlumRPan : BlumUGen {
 		var rPanL, rPanR;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
 		rPanL = in[0] + (in[1] * rads.sin);
 		rPanR = in[1] * rads.cos;
@@ -407,17 +507,31 @@ BlumRPan : BlumUGen {
 		^[rPanL, rPanR]
 	}
 
+	// MS->MS transformation
+	*arMS { |in, angle|
+		var lrSig;
+
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
+
+		// convert to LR domain
+		lrSig = BlumMStoLR.ar(in);
+
+		// apply transformation
+		lrSig = BlumRPan.ar(lrSig, angle);
+
+		// transform back to MS domain
+		^BlumLRtoMS.ar(lrSig)
+	}
+
 	*kr { |in, angle|
 		var rPanL, rPanR;
 		var rads;
 
-		// TODO: wrap angle?
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
 		rPanL = in[0] + (in[1] * rads.sin);
 		rPanR = in[1] * rads.cos;
@@ -444,30 +558,43 @@ BlumLPan : BlumUGen {
 		var lPanL, lPanR;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
 		lPanL = in[0] * rads.cos;
 		lPanR = (in[0] * rads.sin).neg + in[1];
 		^[lPanL, lPanR]
 	}
 
+	// MS->MS transformation
+	*arMS { |in, angle|
+		var lrSig;
+
+		// check input has two channels (i.e. [M, S])
+		this.confirmStereoInputs(in);
+
+		// convert to LR domain
+		lrSig = BlumMStoLR.ar(in);
+
+		// apply transformation
+		lrSig = BlumLPan.ar(lrSig, angle);
+
+		// transform back to MS domain
+		^BlumLRtoMS.ar(lrSig)
+	}
+
 	*kr { |in, angle|
 		var lPanL, lPanR;
 		var rads;
 
-		// TODO: wrap angle?
+		// convert to radians
 		rads = angle.degrad;
 
-		// TODO: should this be able to accept a mono signal?
-		// Throw warning?
-		// make input stereo
-		in = BlumUGen.makeStereo(in);
+		// check input is stereo
+		this.confirmStereoInputs(in);
 
 		lPanL = in[0] * rads.cos;
 		lPanR = (in[0] * rads.sin).neg + in[1];
