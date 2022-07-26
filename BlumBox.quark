@@ -1,0 +1,15 @@
+(
+	\name: "BlumBox.quark",
+    \summary: "The Blumlein Box (aka BlumBox) is a collection of stereo imaging transforms packaged together as a SuperCollider Quark.",
+// 	\copyright: ,
+// 	\license: "GPL",
+// 	\version: "1.0",
+// 	\schelp: ,
+// 	\url: ,
+	\dependencies: [
+		"Hilbert"
+	],
+	\organization: "UW DXARTS: https://dxarts.washington.edu/",
+	\since: "2022",
+// 	\ext_dependancy: 
+)
