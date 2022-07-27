@@ -143,7 +143,7 @@ BlumMStoLR : BlumUGen {
 /*
 ///// args /////
 in: stereo input signal
-angle: rotation angle in degrees, from perspective along x-axis. Limits [-180, 180]
+angle: rotation angle in radians, from perspective along x-axis. Wraps around [-pi, pi]
 
 ///// returns ////
 stereo rotated signal
@@ -156,11 +156,10 @@ BlumRotate : BlumUGen {
 	*ar { |in, angle|
 		var left, right;
 
-		// TODO: wrap angle inside bounds [+= 180]
-		// e.g. while angle >= 360, angle %= 360 . . .
+		// TODO: check for degrees input?
 
-		// normalize degrees for Rotate2 pos argument
-		var pos = angle / -180.0;
+		// normalize radians for Rotate2 pos argument
+		var pos = angle / -pi;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
@@ -174,18 +173,14 @@ BlumRotate : BlumUGen {
 	*arMS {|in, angle|
 		var inM, inS;
 		var rotM, rotS;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
 		#inM, inS = in;
 
-		rotM = (rads.cos * inM) - (rads.sin * inS);
-		rotS = (rads.cos * inM) + (rads.sin * inS);
+		rotM = (angle.cos * inM) - (angle.sin * inS);
+		rotS = (angle.cos * inM) + (angle.sin * inS);
 
 		^[rotM, rotS];
 	}
@@ -193,11 +188,8 @@ BlumRotate : BlumUGen {
 	*kr { |in, angle|
 		var left, right;
 
-		// TODO: wrap angle inside bounds [+= 180]
-		// e.g. while angle >= 360, angle %= 360 . . .
-
-		// normalize degrees for Rotate2 pos argument
-		var pos = angle / -180.0;
+		// normalize radians for Rotate2 pos argument
+		var pos = angle / -pi;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
@@ -215,10 +207,9 @@ BlumRotate : BlumUGen {
 /*
 ///// args /////
 in: stereo input signal
-angle: width angle in degrees, from perspective along x-axis. Limits [-45, 45]
-TODO: Check angle limits
+angle: width angle in radians, from perspective along x-axis. Limits [-pi/4, pi/4]
 
-///// returns ////
+///// returns /////
 stereo widened/narrowed signal
 */
 
@@ -226,18 +217,14 @@ BlumWidth : BlumUGen {
 	*ar { |in, angle|
 		var left, right;
 		var widthL, widthR;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
 		#left, right = in;
 
-		widthL = (rads.cos * left) - (rads.sin * right);
-		widthR = (rads.sin.neg * left) + (rads.cos * right);
+		widthL = (angle.cos * left) - (angle.sin * right);
+		widthR = (angle.sin.neg * left) + (angle.cos * right);
 
 		^[widthL, widthR]
 	}
@@ -246,18 +233,14 @@ BlumWidth : BlumUGen {
 	*arMS {|in, angle|
 		var inM, inS;
 		var widthM, widthS;
-		var rads;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
 		#inM, inS = in;
 
-		// convert to radians
-		rads = angle.degrad;
-
-		widthM = 2.sqrt * ((45 - angle).degrad).sin * inM;
-		widthS = 2.sqrt * ((45 - angle).degrad).cos * inS;
+		widthM = 2.sqrt * ((pi/4) - angle).sin * inM;
+		widthS = 2.sqrt * ((pi/4) - angle).cos * inS;
 
 		^[widthM, widthS];
 	}
@@ -265,18 +248,14 @@ BlumWidth : BlumUGen {
 	*kr { |in, angle|
 		var left, right;
 		var widthL, widthR;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
 		#left, right = in;
 
-		widthL = (rads.cos * left) - (rads.sin * right);
-		widthR = (rads.sin * left).neg + (rads.cos * right);
+		widthL = (angle.cos * left) - (angle.sin * right);
+		widthR = (angle.sin * left).neg + (angle.cos * right);
 
 		^[widthL, widthR]
 	}
@@ -289,7 +268,7 @@ BlumWidth : BlumUGen {
 /*
 ///// args /////
 in: stereo input signal
-angle: balance angle in degrees, from perspective along x-axis. Limits [-45, 45]
+angle: balance angle in radians, from perspective along x-axis. Limits [-pi/4, pi/4]
 TODO: Check angle limits
 
 ///// returns ////
@@ -306,8 +285,8 @@ BlumBalance : BlumUGen {
 
 		#left, right = in;
 
-		balL = 2.sqrt * ((45 - angle).degrad).cos * left;
-		balR = 2.sqrt * ((45 - angle).degrad).sin * right;
+		balL = 2.sqrt * ((pi/4) - angle).cos * left;
+		balR = 2.sqrt * ((pi/4) - angle).sin * right;
 
 		^[balL, balR]
 	}
@@ -315,7 +294,6 @@ BlumBalance : BlumUGen {
 	*arMS {|in, angle|
 		var inM, inS;
 		var balM, balS;
-		var rads;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
@@ -323,11 +301,8 @@ BlumBalance : BlumUGen {
 		inM = in[0];
 		inS = in[1];
 
-		// convert to radians
-		rads = angle.degrad;
-
-		balM = (rads.cos * inM) + (rads.sin * inS);
-		balS = (rads.sin * inM) + (rads.cos * inS);
+		balM = (angle.cos * inM) + (angle.sin * inS);
+		balS = (angle.sin * inM) + (angle.cos * inS);
 
 		^[balM, balS];
 	}
@@ -341,8 +316,8 @@ BlumBalance : BlumUGen {
 
 		#left, right = in;
 
-		balL = 2.sqrt * ((45 - angle).degrad).cos * left;
-		balR = 2.sqrt * ((45 - angle).degrad).sin * right;
+		balL = 2.sqrt * ((pi/4) - angle).cos * left;
+		balR = 2.sqrt * ((pi/4) - angle).sin * right;
 
 		^[balL, balR]
 	}
@@ -353,28 +328,22 @@ BlumBalance : BlumUGen {
 /*
 ///// args /////
 in: MS-domain signal in the format [M, S]
-angle: mPan angle in degrees, from perspective along x-axis. Limits [-45, 45]
+angle: mPan angle in radians, from perspective along x-axis. Limits [-pi/2, pi/2]
 TODO: Check angle limits
 
 ///// returns ////
 M-panned MS signal in the format [M, S]
-
-TODO: include BlumMPanLR? name just BlumMPan?
 */
 
 BlumMPan : BlumUGen {
 	*arMS { |in, angle|
 		var mPanM, mPanS;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		mPanM = in[0] * rads.cos;
-		mPanS = in[0] * rads.sin + in[1];
+		mPanM = in[0] * angle.cos;
+		mPanS = in[0] * angle.sin + in[1];
 
 		^[mPanM, mPanS]
 	}
@@ -417,7 +386,7 @@ BlumMPan : BlumUGen {
 /*
 ///// args /////
 in: MS-domain signal in the format [M, S]
-angle: asymmetry angle in degrees, from perspective along x-axis. Limits [-45, 45]
+angle: asymmetry angle in radians, from perspective along x-axis. Limits [-pi/2, pi/2]
 TODO: Check angle limits
 
 ///// returns ////
@@ -429,16 +398,12 @@ TODO: include BlumMPanLR? name just BlumMPan?
 BlumAsym : BlumUGen {
 	*arMS { |in, angle|
 		var asymM, asymS;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		asymM = in[0] - (in[1] * rads.sin);
-		asymS = in[1] * rads.cos;
+		asymM = in[0] - (in[1] * angle.sin);
+		asymS = in[1] * angle.cos;
 
 		^[asymM, asymS]
 	}
@@ -484,7 +449,7 @@ BlumAsym : BlumUGen {
 /*
 ///// args /////
 in: stereo signal
-angle: R-pan angle in degrees, from perspective along x-axis.
+angle: R-pan angle in radians, from perspective along x-axis.
 TODO: Check angle limits
 
 ///// returns ////
@@ -493,16 +458,12 @@ R-panned stereo signal
 BlumRPan : BlumUGen {
 	*ar { |in, angle|
 		var rPanL, rPanR;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		rPanL = in[0] + (in[1] * rads.sin);
-		rPanR = in[1] * rads.cos;
+		rPanL = in[0] + (in[1] * angle.sin);
+		rPanR = in[1] * angle.cos;
 
 		^[rPanL, rPanR]
 	}
@@ -526,15 +487,12 @@ BlumRPan : BlumUGen {
 
 	*kr { |in, angle|
 		var rPanL, rPanR;
-		var rads;
-
-		rads = angle.degrad;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		rPanL = in[0] + (in[1] * rads.sin);
-		rPanR = in[1] * rads.cos;
+		rPanL = in[0] + (in[1] * angle.sin);
+		rPanR = in[1] * angle.cos;
 
 		^[rPanL, rPanR]
 	}
@@ -546,7 +504,7 @@ BlumRPan : BlumUGen {
 /*
 ///// args /////
 in: stereo signal
-angle: L-pan angle in degrees, from perspective along x-axis.
+angle: L-pan angle in radians, from perspective along x-axis.
 TODO: Check angle limits
 
 ///// returns ////
@@ -556,16 +514,12 @@ L-panned stereo signal
 BlumLPan : BlumUGen {
 	*ar { |in, angle|
 		var lPanL, lPanR;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		lPanL = in[0] * rads.cos;
-		lPanR = (in[0] * rads.sin).neg + in[1];
+		lPanL = in[0] * angle.cos;
+		lPanR = (in[0] * angle.sin).neg + in[1];
 		^[lPanL, lPanR]
 	}
 
@@ -588,16 +542,12 @@ BlumLPan : BlumUGen {
 
 	*kr { |in, angle|
 		var lPanL, lPanR;
-		var rads;
-
-		// convert to radians
-		rads = angle.degrad;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		lPanL = in[0] * rads.cos;
-		lPanR = (in[0] * rads.sin).neg + in[1];
+		lPanL = in[0] * angle.cos;
+		lPanR = (in[0] * angle.sin).neg + in[1];
 		^[lPanL, lPanR]
 	}
 }

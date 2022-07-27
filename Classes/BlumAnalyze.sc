@@ -2,7 +2,7 @@
 
 
 //---------------------------------------------------------------------
-//	TODO: BlumBox in a scentence
+//	TODO: BlumBox in a sentence
 //
 // 	Classes: (Superclass) BlumEval, tAvgPower
 //
