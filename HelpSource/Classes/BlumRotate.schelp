@@ -4,37 +4,52 @@ categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel>Panners
 related:: Classes/BlumBalance, Classes/BlumWidth
 
 DESCRIPTION::
-Rotation is a true stereo panning algorithm, accepting a stereo input and returning a stereo output. It is the stereo equivalent of the sine-cosine panning law. In the cartesian plane, if the listener is facing 0 degrees, rotation orients a stereo signal
+Rotation is a true stereo panning algorithm, accepting a stereo input and returning a stereo output. It is the stereo equivalent of the sine-cosine panning law. In the cartesian plane, rotation orients a stereo signal with respect to the x-axis (i.e. the listener's perspective) in radians.
+
+BlumRotate is a wrapper for the inbuilt link::Classes/Rotate2::.
 
 CLASSMETHODS::
 
 METHOD:: ar
-(describe method here)
 
 ARGUMENT:: in
-(describe argument here)
+The stereo signal, an array: [L, R]
 
 ARGUMENT:: angle
-(describe argument here)
+Rotation angle, in radians
 
-returns:: (describe returnvalue here)
+RETURNS::
+Stereo rotated signal, an array: [L, R]
 
 METHOD:: kr
-(describe method here)
 
 ARGUMENT:: in
-(describe argument here)
+The stereo signal, an array: [L, R]
 
 ARGUMENT:: angle
-(describe argument here)
+Rotation angle, in radians
 
-returns:: (describe returnvalue here)
+RETURNS::
+Stereo rotated signal, an array: [L, R]
 
-INSTANCEMETHODS::
-
+DISCUSSION::
+BlumRotate's angle input is measured from the listener's perspective at zero radians. A rotation of -pi/2 will place an M-channel signal in the -S channel. Additionally, stereo rotation may be used as a basis for other stereo transforms. [comment]: <> (Link to Stereo Transforms guide)
 
 EXAMPLES::
 
 code::
-(some example code)
+~rotTest = {
+	var in;
+	var lfo;
+
+	in = SinOsc.ar([440, 330], mul: 0.3);
+
+	lfo = LFSaw.kr(0.4).range(0, 2pi);
+
+	BlumRotate.ar(
+		in: in,
+		angle: lfo
+	)
+}.scope
+
 ::
