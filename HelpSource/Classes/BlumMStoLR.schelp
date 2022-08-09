@@ -1,33 +1,29 @@
 TITLE:: BlumMStoLR
-summary:: (put short description here)
-categories:: Undocumented classes, UGens>Undocumented
-related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+summary:: LR domain transform
+categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel
+related:: Classes/BlumLRtoMS
 
 DESCRIPTION::
-(put long description here)
+Transform an MS domain stereo signal to the LR domain.
 
 
 CLASSMETHODS::
 
 METHOD:: kr
-(describe method here)
 
-ARGUMENT:: in
-(describe argument here)
+argument: in
+The stereo input, an array: [M, S]
 
-returns:: (describe returnvalue here)
+returns::
+LR domain signal, an array: [L, R]
 
 METHOD:: ar
-(describe method here)
 
-ARGUMENT:: in
-(describe argument here)
+argument: in
+The stereo signal, an array: [M, S]
 
-returns:: (describe returnvalue here)
-
-
-INSTANCEMETHODS::
-
+returns::
+LR domain signal, an array: [L, R]
 
 EXAMPLES::
 

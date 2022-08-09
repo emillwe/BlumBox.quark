@@ -1,35 +1,23 @@
 TITLE:: BlumWidth
-summary:: (put short description here)
-categories:: Undocumented classes, UGens>Undocumented
-related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+summary:: Stereo width transform
+categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel
+related:: Classes/BlumRotate
 
 DESCRIPTION::
-(put long description here)
-
+Widen or narrow the width of a stereo image.
 
 CLASSMETHODS::
 
-METHOD:: kr
-(describe method here)
+METHOD:: ar, kr
 
-ARGUMENT:: in
-(describe argument here)
+argument:: in
+The stereo input, an array: [L, R]
 
-ARGUMENT:: angle
-(describe argument here)
+argument:: angle
+Width angle in radians between -pi/2, pi/2. Generally, positive values will widen the stereo image, while negative values will compress the image.
 
-returns:: (describe returnvalue here)
-
-METHOD:: ar
-(describe method here)
-
-ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
-(describe argument here)
-
-returns:: (describe returnvalue here)
+returns::
+Width transformed signal, an array: [L, R].
 
 
 INSTANCEMETHODS::
@@ -38,5 +26,21 @@ INSTANCEMETHODS::
 EXAMPLES::
 
 code::
-(some example code)
+(
+~widthTest = {
+	var in;
+	var lfo;
+
+	// Inputs
+	in = SinOsc.ar([440, 330], mul: 0.3);
+	// in = PinkNoise.ar(mul: [1.0, 1.0]);
+
+	// LFOs
+	lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // standard bounds
+	// lfo = LFSaw.kr(0.1).range(0, 2pi); // angle wrapping: L, R
+	// lfo = LFTri.kr(0.3).range(-pi/2, pi/2); // note wrapping pattern for theta outside += pi/4: L, R, L, R, etc.
+
+	BlumWidth.ar(in, lfo)
+}.scope
+)
 ::

@@ -10,27 +10,17 @@ BlumRotate is a wrapper for the inbuilt link::Classes/Rotate2::.
 
 CLASSMETHODS::
 
-METHOD:: ar
+METHOD:: ar, kr
 
-ARGUMENT:: in
-The stereo signal, an array: [L, R]
+argument:: in
+The stereo input, an array: [L, R]
 
-ARGUMENT:: angle
+argument:: angle
 Rotation angle, in radians
 
-RETURNS::
+returns::
 Stereo rotated signal, an array: [L, R]
 
-METHOD:: kr
-
-ARGUMENT:: in
-The stereo signal, an array: [L, R]
-
-ARGUMENT:: angle
-Rotation angle, in radians
-
-RETURNS::
-Stereo rotated signal, an array: [L, R]
 
 DISCUSSION::
 BlumRotate's angle input is measured from the listener's perspective at zero radians. A rotation of -pi/2 will place an M-channel signal in the -S channel. Additionally, stereo rotation may be used as a basis for other stereo transforms. [comment]: <> (Link to Stereo Transforms guide)
@@ -38,6 +28,7 @@ BlumRotate's angle input is measured from the listener's perspective at zero rad
 EXAMPLES::
 
 code::
+(
 ~rotTest = {
 	var in;
 	var lfo;
@@ -51,5 +42,5 @@ code::
 		angle: lfo
 	)
 }.scope
-
+)
 ::
