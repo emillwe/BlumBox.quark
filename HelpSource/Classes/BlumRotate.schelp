@@ -16,7 +16,7 @@ argument:: in
 The stereo input, an array: [L, R]
 
 argument:: angle
-Rotation angle, in radians
+Rotation angle in radians between -pi/2, pi/2
 
 returns::
 Stereo rotated signal, an array: [L, R]

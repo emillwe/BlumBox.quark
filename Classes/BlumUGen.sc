@@ -298,8 +298,7 @@ BlumBalance : BlumUGen {
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		inM = in[0];
-		inS = in[1];
+		#inM, inS = in;
 
 		balM = (angle.cos * inM) + (angle.sin * inS);
 		balS = (angle.sin * inM) + (angle.cos * inS);
@@ -337,13 +336,16 @@ M-panned MS signal in the format [M, S]
 
 BlumMPan : BlumUGen {
 	*arMS { |in, angle|
+		var inM, inS;
 		var mPanM, mPanS;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		mPanM = in[0] * angle.cos;
-		mPanS = in[0] * angle.sin + in[1];
+		#inM, inS = in;
+
+		mPanM = inM * angle.cos;
+		mPanS = inM * angle.sin + inS;
 
 		^[mPanM, mPanS]
 	}
@@ -397,13 +399,16 @@ TODO: include BlumMPanLR? name just BlumMPan?
 
 BlumAsym : BlumUGen {
 	*arMS { |in, angle|
+		var inM, inS;
 		var asymM, asymS;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		asymM = in[0] - (in[1] * angle.sin);
-		asymS = in[1] * angle.cos;
+		#inM, inS = in;
+
+		asymM = inM - (inS * angle.sin);
+		asymS = inS * angle.cos;
 
 		^[asymM, asymS]
 	}
@@ -457,13 +462,16 @@ R-panned stereo signal
 */
 BlumRPan : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
 		var rPanL, rPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		rPanL = in[0] + (in[1] * angle.sin);
-		rPanR = in[1] * angle.cos;
+		#left, right = in;
+
+		rPanL = left + (right * angle.sin);
+		rPanR = right * angle.cos;
 
 		^[rPanL, rPanR]
 	}
@@ -486,13 +494,16 @@ BlumRPan : BlumUGen {
 	}
 
 	*kr { |in, angle|
+		var left, right;
 		var rPanL, rPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		rPanL = in[0] + (in[1] * angle.sin);
-		rPanR = in[1] * angle.cos;
+		#left, right = in;
+
+		rPanL = left + (right * angle.sin);
+		rPanR = right * angle.cos;
 
 		^[rPanL, rPanR]
 	}
@@ -513,13 +524,16 @@ L-panned stereo signal
 
 BlumLPan : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
 		var lPanL, lPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		lPanL = in[0] * angle.cos;
-		lPanR = (in[0] * angle.sin).neg + in[1];
+		#left, right = in;
+
+		lPanL = left * angle.cos;
+		lPanR = (left * angle.sin).neg + right;
 		^[lPanL, lPanR]
 	}
 
@@ -541,13 +555,16 @@ BlumLPan : BlumUGen {
 	}
 
 	*kr { |in, angle|
+		var left, right;
 		var lPanL, lPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		lPanL = in[0] * angle.cos;
-		lPanR = (in[0] * angle.sin).neg + in[1];
+		#left, right = in;
+
+		lPanL = left * angle.cos;
+		lPanR = (right * angle.sin).neg + right;
 		^[lPanL, lPanR]
 	}
 }

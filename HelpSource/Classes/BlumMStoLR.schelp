@@ -9,18 +9,10 @@ Transform an MS domain stereo signal to the LR domain.
 
 CLASSMETHODS::
 
-METHOD:: kr
+METHOD:: ar, kr
 
 argument: in
 The stereo input, an array: [M, S]
-
-returns::
-LR domain signal, an array: [L, R]
-
-METHOD:: ar
-
-argument: in
-The stereo signal, an array: [M, S]
 
 returns::
 LR domain signal, an array: [L, R]
