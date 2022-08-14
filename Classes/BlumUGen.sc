@@ -135,15 +135,13 @@ BlumMStoLR : BlumUGen {
 	}
 }
 
-// TODO: Sin-Cos pan, panMS
-
 //-----------------------------------------------------------------------
 // wrapper for Rotate2, using stereo input and degree arguments
 
 /*
 ///// args /////
 in: stereo input signal
-angle: rotation angle in radians, from perspective along x-axis. Wraps around [-pi, pi]
+angle: rotation angle in radians, from perspective along x-axis (towards M). Wraps around [-pi, pi]
 
 ///// returns ////
 stereo rotated signal
@@ -155,8 +153,6 @@ For a mono signal, BlumRotate acts as a simple panner.
 BlumRotate : BlumUGen {
 	*ar { |in, angle|
 		var left, right;
-
-		// TODO: check for degrees input?
 
 		// normalize radians for Rotate2 pos argument
 		var pos = angle / -pi;
@@ -207,7 +203,8 @@ BlumRotate : BlumUGen {
 /*
 ///// args /////
 in: stereo input signal
-angle: width angle in radians, from perspective along x-axis. Limits [-pi/4, pi/4]
+angle: width angle in radians. pi/4 will collapse the input to the S axis,
+while -pi/4 will collapse the input to the M axis.
 
 ///// returns /////
 stereo widened/narrowed signal
@@ -262,14 +259,13 @@ BlumWidth : BlumUGen {
 }
 
 //-----------------------------------------------------------------------
-// TODO: Better class description
 // rotate M and S channels towards or away the L-axis
 
 /*
 ///// args /////
 in: stereo input signal
-angle: balance angle in radians, from perspective along x-axis. Limits [-pi/4, pi/4]
-TODO: Check angle limits
+angle: balance angle in radians. pi/4 will collapse the input to the L axis,
+while -pi/4 will collapse the input to the R axis.
 
 ///// returns ////
 stereo balanced signal
@@ -324,14 +320,14 @@ BlumBalance : BlumUGen {
 
 //-----------------------------------------------------------------------
 // rotate only the M-axis, keeping the S-axis in place
+
 /*
 ///// args /////
-in: MS-domain signal in the format [M, S]
-angle: mPan angle in radians, from perspective along x-axis. Limits [-pi/2, pi/2]
-TODO: Check angle limits
+in: stereo input signal
+angle: mPan angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
-M-panned MS signal in the format [M, S]
+m-panned signal
 */
 
 BlumMPan : BlumUGen {
@@ -385,16 +381,14 @@ BlumMPan : BlumUGen {
 
 //-----------------------------------------------------------------------
 // rotate only the S-axis, keeping the M-axis in place
+
 /*
 ///// args /////
-in: MS-domain signal in the format [M, S]
-angle: asymmetry angle in radians, from perspective along x-axis. Limits [-pi/2, pi/2]
-TODO: Check angle limits
+in: stereo input signal
+angle: asymmetry angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
-Asymmetry-transformed MS signal in the format [M, S]
-
-TODO: include BlumMPanLR? name just BlumMPan?
+asymmetry-transformed signal
 */
 
 BlumAsym : BlumUGen {
@@ -454,11 +448,10 @@ BlumAsym : BlumUGen {
 /*
 ///// args /////
 in: stereo signal
-angle: R-pan angle in radians, from perspective along x-axis.
-TODO: Check angle limits
+angle: R-pan angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
-R-panned stereo signal
+R-panned signal
 */
 BlumRPan : BlumUGen {
 	*ar { |in, angle|
@@ -515,8 +508,7 @@ BlumRPan : BlumUGen {
 /*
 ///// args /////
 in: stereo signal
-angle: L-pan angle in radians, from perspective along x-axis.
-TODO: Check angle limits
+angle: L-pan angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
 L-panned stereo signal

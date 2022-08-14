@@ -4,7 +4,8 @@
 //---------------------------------------------------------------------
 //	TODO: BlumBox in a sentence
 //
-// 	Classes: (Superclass) BlumEval, tAvgPower
+// 	Classes: (Superclass) BlumEval, BlumFollowPower, BlumFollowBalance,
+//  BlumFollowCorrelation, BlumFollowAngle, BlumFollowRadius
 //
 //	TODO: BlumBox Summary
 //
@@ -12,11 +13,9 @@
 
 /*
 ~-- Attribution --~
-TODO: DXARTS 462 DOCUMENTATION FOR ATTRIBUTION
-
-The implementation of all the following stereo imaging transforms are taken
-from "Classic Stereo Imaging Transforms--A Review", by Dr. Joseph Anderson
-@ DXARTS, University of Washington.
+The implementation of all the following stereo imaging analyses are taken
+from DXARTS 462 lecture notes, Spring 2022, week 8. Spatial Processing IV: Image Analysis,
+Dr. Joseph Anderson, University of Washington.
 */
 
 BlumEval : BlumUGen {
@@ -42,8 +41,7 @@ BlumFollowPower : BlumEval {
 
 		case(
 			{ method == \instant }, {
-				normfac = 0.5;  // is this right?? TEST the two match w/ sinusoid!!
-				// normfac = 2.sqrt.reciprocal;
+				normfac = 0.5;
 
 				// magnitude^2 of analytic signal
 				left2 = HilbertW.ar(left, size).squared.sum;
@@ -77,7 +75,7 @@ BlumFollowPower : BlumEval {
 
 		case(
 			{ method == \instant }, {
-				normfac = 0.5;  // is this right?? TEST the two match w/ sinusoid!!
+				normfac = 0.5;
 
 				// magnitude^2 of analytic signal
 				left2 = HilbertW.kr(left, size).squared.sum;
@@ -113,8 +111,7 @@ BlumFollowBalance : BlumEval {
 		#left, right = in;
 
 		case(
-			{ method == \instant }, { // TODO: Doesn't work!
-				// normfac = (2.sqrt); // gives output between +- root 2
+			{ method == \instant }, {
 				normfac = 1;
 
 				// magnitude^2 of analytic signal
@@ -192,33 +189,6 @@ BlumFollowCorrelation : BlumEval {
 
 		case(
 			{ method == \instant }, {
-				/*// normfac = 2 * 2.sqrt;
-				normfac = 2;
-
-				// magnitude^2 of analytic signal
-				left2 = HilbertW.ar(left, size).squared.sum;
-				right2 = HilbertW.ar(right, size).squared.sum;
-				/*left2 = HilbertW.ar(left, size).squared.sum.squared;
-				right2 = HilbertW.ar(right, size).squared.sum.squared;*/
-
-				// analytic left and right
-				/*left2 = HilbertW.ar(left, size);
-				right2 = HilbertW.ar(right, size);*/
-
-				// magnitude squared
-				/*left2 = (left2.squared).sum;
-				right2 = (right2.squared).sum;*/
-				/*left2 = left2.squared;
-				right2 = right2.squared;*/
-
-				// TODO: is this right?
-				// multLR = HilbertW.ar(left * right, size).sum;
-				// multLR = HilbertW.ar(left * right, size).squared.sum;
-				// multLR = HilbertW.ar(left * right, size).squared.sum.squared;
-
-				// analytic sum multiply
-				multLR = (left2 * right2).sum;*/
-
 				// analytic left and right
 				leftA = HilbertW.ar(left, size);
 				rightA = HilbertW.ar(right, size);
@@ -315,9 +285,6 @@ BlumFollowAngle : BlumEval {
 
 		case(
 			{ method == \instant }, {
-				// normalization factor
-				// normfac = 2 / (2.sqrt - 1);
-				// normfac = (2.sqrt - 1) / 2;
 				normfac = 0.5;
 
 				// analytic left and right
@@ -367,9 +334,6 @@ BlumFollowAngle : BlumEval {
 
 		case(
 			{ method == \instant }, {
-				// normalization factor
-				// normfac = 2 / (2.sqrt - 1);
-				// normfac = (2.sqrt - 1) / 2;
 				normfac = 0.5;
 
 				// analytic left and right

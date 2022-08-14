@@ -1,0 +1,67 @@
+TITLE:: BlumFollowBalance
+summary:: Stereo balance analysis
+categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
+related:: Classes/BlumBalance
+
+DESCRIPTION::
+Analyze the balance of a stereo signal
+
+CLASSMETHODS::
+
+METHOD:: ar, kr
+
+ARGUMENT:: in
+The stereo input, an array: [L, R]
+
+ARGUMENT:: size
+Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
+
+ARGUMENT:: method
+code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
+
+returns::
+Stereo balance, between -1 and 1
+
+
+EXAMPLES::
+
+code::
+(
+~balanceTest = {
+	var in, out;
+	var lfo;
+	var instant, average;
+	var makeUpDelay;
+	var size = 2048;
+	var halfSize = (size / 2).asInteger;
+
+	// Inputs
+	in = SinOsc.ar(440);
+	// in = PinkNoise.ar;
+
+	// LFOs
+	lfo = SinOsc.kr(0.3);
+	// lfo = 1;  // fixed, left
+	// lfo = 0;  // fixed, center
+	// lfo = -1;  // fixed, left
+
+	// create time-varying stereo input
+	in = Pan2.ar(in, lfo);
+
+	// Instant and average output
+	instant = BlumFollowBalance.ar(in, size, \instant);
+	average = BlumFollowBalance.ar(in, size, \average);
+
+	// match delay of instant and average for comparison
+	makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
+	average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+
+	// Compare instant vs average
+	// out = (instant.neg + average);
+	out = instant;
+	// out = average;
+
+	out.poll
+}.play
+)
+::
