@@ -23,24 +23,49 @@ Stereo rotated signal, an array: [L, R]
 
 
 DISCUSSION::
-BlumRotate's angle input is measured from the listener's perspective at zero radians. A rotation of -pi/2 will place an M-channel signal in the -S channel. Additionally, stereo rotation may be used as a basis for other stereo transforms. [comment]: <> (Link to Stereo Transforms guide)
+BlumRotate's angle input is measured from the listener's perspective at zero radians. A rotation of -pi/2 will place an M-channel signal in the -S channel. Additionally, stereo rotation may be used as a basis for other stereo transforms.
 
 EXAMPLES::
+
+Contrast full stereo rotation with link::Classes/BlumBalance::.
 
 code::
 (
 ~rotTest = {
-	var in;
+	var in, inL, inR;
+	var out;
 	var lfo;
+	var env1, env2;
+	var freqMod;
 
-	in = SinOsc.ar([440, 330], mul: 0.3);
+	freqMod = LFNoise2.kr(3.3).range(0.99, 1.01);
 
-	lfo = LFSaw.kr(0.4).range(0, 2pi);
+	// L and R channels
+	inL = SinOsc.ar(440 * freqMod, mul: 0.3);
+	inR = SinOsc.ar(330 * freqMod, mul: 0.3);
 
-	BlumRotate.ar(
+	// L and R envelopes
+	#env1, env2 = EnvGen.kr(
+		Env.perc(releaseTime: 0.3),
+		Impulse.kr([5, 3])
+	);
+
+	// Stereo input
+	in = [
+		inL * env1,
+		inR * env2
+	];
+
+	lfo = LFSaw.kr(0.1).range(0, 2pi);
+
+	out = BlumRotate.ar(
 		in: in,
 		angle: lfo
-	)
-}.scope
+	);
+
+	// compare in/out signals
+	// in
+	out
+}.play
 )
 ::

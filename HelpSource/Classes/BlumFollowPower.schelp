@@ -3,7 +3,7 @@ summary:: Stereo power analysis
 categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
 
 DESCRIPTION::
-Measure the power of a stereo signal
+Measure the power of a stereo signal.
 
 CLASSMETHODS::
 
@@ -25,6 +25,7 @@ Signal power
 EXAMPLES::
 
 code::
+// Run for 3s and plot
 (
 ~powerTest = {
 	var in, out;
@@ -34,7 +35,7 @@ code::
 	var halfSize = (size / 2).asInteger;
 
 	// Sinusoids
-	// in = SinOsc.ar([440, 440]);
+	in = SinOsc.ar([440, 440]);
 	// in = SinOsc.ar([220, 0]);
 	// in = SinOsc.ar([0, 220]);
 
@@ -42,7 +43,7 @@ code::
 	// in = in.sum
 
 	// Noise
-	in =  PinkNoise.ar([1.0, 1.0]);
+	// in =  PinkNoise.ar([1.0, 1.0]);
 
 	// Instant and average output
 	instant = BlumFollowPower.ar(in, method: \instant);
@@ -50,8 +51,7 @@ code::
 
 	// match delay of instant and average for comparison
 	makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
-	// average = DelayN.ar(average, makeUpDelay, makeUpDelay);
-	// NOTE: results are closer without delay compensation
+	average = DelayN.ar(average, makeUpDelay, makeUpDelay);
 
 	// Compare instant vs average
 	// out = (instant.neg + average);
@@ -59,6 +59,6 @@ code::
 	// out = average;
 
 	out.poll;
-}.play
+}.plot(3)
 )
 ::

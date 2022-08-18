@@ -28,6 +28,7 @@ code::
 (
 ~balanceTest = {
 	var inL, inR;
+	var out;
 	var env1, env2;
 	var in;
 	var lfo;
@@ -57,7 +58,12 @@ code::
 	// Transform LFO
 	lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // Note that values outside these bounds will wrap
 
-	BlumBalance.ar(in, lfo);
-}.play
+	out = BlumBalance.ar(in, lfo);
+
+	// compare in/out signals
+	// in
+	out
+
+}.play;
 )
 ::

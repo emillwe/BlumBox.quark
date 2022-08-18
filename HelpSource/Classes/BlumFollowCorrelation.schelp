@@ -4,7 +4,7 @@ categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
 
 
 DESCRIPTION::
-Analyze the correlation of a stereo signal
+Analyze the correlation of a stereo signal.
 
 
 CLASSMETHODS::
@@ -26,6 +26,7 @@ Stereo correlation, between -1 and 1. A return value of -1 Corresponds to fully 
 EXAMPLES::
 
 code::
+// Run for 3s and plot
 (
 ~correlationTest = {
 	var in, out;
@@ -35,12 +36,11 @@ code::
 	var halfSize = (size / 2).asInteger;
 
 	// Inputs
-	// in = SinOsc.ar([880, -880]); // out of phase: -1
-	in = SinOsc.ar([440, -440]); // out of phase: -1
-	// in = SinOsc.ar([440, 440]); // in phase: 1
+	// in = SinOsc.ar([440, -440]); // out of phase: -1
+	in = SinOsc.ar([440, 440]); // in phase: 1
 	// in = SinOsc.ar(440, [0.5pi, 0.0]); // +quadrature: 0.0
 	// in = SinOsc.ar(440, [0.5pi.neg, 0.0]); // -quadrature: 0.0
-	// in = PinkNoise.ar(mul: [1.0, 1.0]);
+	// in = SinOsc.ar([440, LFSaw.kr(0.1).range(-440, 440)]); oscillates between in and out of phase
 
 	// Instant and average output
 	instant = BlumFollowCorrelation.ar(in, size, \instant);
@@ -56,6 +56,6 @@ code::
 	out = instant;
 
 	out.poll
-}.scope
+}.plot(3)
 )
 ::

@@ -4,7 +4,7 @@ categories:: Libraries>Blumlein Box>Transforms, UGens>MultiChannel>Panners
 related:: Classes/BlumAsym
 
 DESCRIPTION::
-Middle pan is a rotation the M-channel with the S-channel left in place.
+Middle pan is a rotation of the M-axis with the S-axis left in place.
 
 
 CLASSMETHODS::
@@ -25,25 +25,34 @@ EXAMPLES::
 code::
 (
 ~mPanTest = {
-	var in;
+	var in, out;
+	var env;
 	var lfo;
 	var m, s;
 
 	// Inputs
-	// in = PinkNoise.ar(mul: [1.0, 1.0]);
+
+	env = EnvGen.kr(
+		envelope: Env.perc(releaseTime: 0.3),
+		gate: Impulse.kr(4.0);
+	);
 
 	// ms input
-	m = SinOsc.ar(220);
-	s = PinkNoise.ar;
+	m = SinOsc.ar(440, mul: 0.3) * env;
+	s = PinkNoise.ar(0.5);
 
 	in = BlumMStoLR.ar([m, s]);
 
 	// LFOs
-	lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // standard bounds
-	// lfo = LFSaw.kr(0.1).range(0, 2pi); // angle wrapping: L, R
-	// lfo = LFTri.kr(0.3).range(-pi/, pi/2); // note wrapping pattern for theta outside += pi/4: L, R, L, R, etc.
+	// lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // standard bounds
+	lfo = LFSaw.kr(0.1).range(0, 2pi); // full rotation of m-channel
 
-	BlumMPan.ar(in, lfo);
-}.scope
+	out = BlumMPan.ar(in, lfo);
+
+	// compare in/out signals
+	// in
+	out
+
+}.play
 )
 ::

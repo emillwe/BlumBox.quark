@@ -18,7 +18,45 @@ returns::
 LR domain signal, an array: [L, R]
 
 EXAMPLES::
+Transformation between MS and LR domains can give the user more flexibility with
+spatial processing.
 
 code::
-(some example code)
+(
+// Processing in the MS domain: wide filter
+~msTest = {
+	var in, out;
+	var mid, side;
+
+	// stereo input
+	in = LFSaw.ar([220, 221], mul: 0.3);
+
+	// transform to MS domain
+	#mid, side = BlumLRtoMS.ar(in);
+
+	// filter M channel
+	mid = LPF.ar(
+		in: mid,
+		freq: 1000,
+		mul: 1.5
+	);
+
+	// filter S channel
+	side = HPF.ar(
+		in: side,
+		freq: 1000,
+		mul: 1.5
+	);
+
+	// recompose MS signal
+	out = [mid, side];
+
+	// transform back to LR domain
+	out = BlumMStoLR.ar(out);
+
+	// compare in/out signals
+	// in
+	out
+}.play
+)
 ::

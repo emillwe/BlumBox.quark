@@ -4,7 +4,7 @@ categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
 related:: Classes/BlumFollowRadius
 
 DESCRIPTION::
-Measure the encoding angle of a stereo source
+Measure the encoding angle of a stereo source.
 
 CLASSMETHODS::
 
@@ -25,6 +25,7 @@ Signal encoding angle
 EXAMPLES::
 
 code::
+// Run for 3s and plot
 (
 ~angleTest = {
 	var in, out;
@@ -35,16 +36,13 @@ code::
 	var halfSize = (size / 2).asInteger;
 
 	// Inputs
-	// in = SinOsc.ar; // use with Pan2
 	in = SinOsc.ar([440, 440]);
 	// in = PinkNoise.ar(mul: [1.0, 1.0]);
 
 	// LFOs
-	lfo = SinOsc.kr(0.3); // angle oscillates between +/- pi/4
 	rotLFO = LFSaw.kr(0.3).range(0, 2pi); // angle oscillates between +/- pi/2
 
 	// apply lfo
-	// in = Pan2.ar(in, lfo);
 	in = BlumRotate.ar(in, rotLFO);
 
 	// Instant and average output
@@ -61,6 +59,6 @@ code::
 	out = instant;
 
 	out.poll;
-}.play
+}.plot(3)
 )
 ::

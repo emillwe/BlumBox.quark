@@ -4,7 +4,7 @@ categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
 related:: Classes/BlumBalance
 
 DESCRIPTION::
-Analyze the balance of a stereo signal
+Analyze the balance of a stereo signal.
 
 CLASSMETHODS::
 
@@ -26,6 +26,7 @@ Stereo balance, between -1 and 1
 EXAMPLES::
 
 code::
+// Run for 3s and plot
 (
 ~balanceTest = {
 	var in, out;
@@ -37,7 +38,6 @@ code::
 
 	// Inputs
 	in = SinOsc.ar(440);
-	// in = PinkNoise.ar;
 
 	// LFOs
 	lfo = SinOsc.kr(0.3);
@@ -62,6 +62,6 @@ code::
 	// out = average;
 
 	out.poll
-}.play
+}.plot(3)
 )
 ::
