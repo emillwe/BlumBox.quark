@@ -22,29 +22,38 @@ The Blumlein Box implements the following 9 stereo transforms.
 ### MS to LR
 Transforms a signal from the MS domain to the LR domain
 
+
 ### LR to MS
 Transforms a signal from the LR domain to the MS domain
+
 
 ### Rotation
 Rotates a stereo signal, preserving relative positions in the stereo field
 
+
 ### Width
 Widens or narrows a stereo signal
+
 
 ### Balance
 Stereo panning as implemented on most consumer electronics--compresses a stereo signal towards the L or R axis
 
+
 ### Middle Panorama
 Rotates the M-axis of a stereo image, leaving the S-axis in place
+
 
 ### Asymmetry
 Rotates the S-axis of a stereo image, leaving the M-axis in place
 
+
 ### Left Panorama
 Rotates only the R-axis of a stereo image
 
+
 ### Right Panorama
 Rotates only the L-axis of a stereo image
+
 
 ## The Analyses
 The Blumlein Box also includes the following 5 stereo imaging analysis functions. Each has the option to return either an instantaneous or time-average value.
@@ -52,14 +61,18 @@ The Blumlein Box also includes the following 5 stereo imaging analysis functions
 ### Power
 Returns the power of a stereo signal
 
+
 ### Balance
 Stereo signal balance, i.e. the ratio of the S- to M-axis
+
 
 ### Correlation
 Cross-correlation of L and R channels, i.e. the "stereo-ness" of the image
 
+
 ### Angle
 Apparent source direction of a stereo image in radians
+
 
 ### Radius
 Encoding radius of a stereo image
