@@ -261,7 +261,7 @@ BlumFollowCorrelation : BlumEval {
 		// the regularization - avoid divide by zero!
 		reg = DC.kr(this.reg.dbamp);
 
-		// analyze balance
+		// analyze correlation
 		correlation = normfac * multLR / ((left2 + right2) + reg);
 
 		^correlation
