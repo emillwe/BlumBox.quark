@@ -7,7 +7,15 @@ section:: Introduction
 
 The Blumlein Box, AKA BlumBox, is a set of tools for the transformation and analysis of stereo signals. It includes commonly used transforms, such as stereo width and balance, as well as more obscure techniques, like asymmetry and middle panorama. The BlumBox provides an ergonomic stereo workflow for composers and purist recordists alike.
 
-Classical Stereo Imaging Transforms--A Review, by Dr. Joseph Anderson, serves as the basis for this work. For a more detailed tutorial on the BlumBox and illustration of concepts presented in the above paper, see: link::Tutorials/StereoImagingTransformsIllustrated::
+section:: Acknowledgments
+
+Special thanks to Dr. Joseph Anderson, whose paper "Classical Stereo Imaging Transforms--A Review", serves as the basis for this work. The Blumlein Box was developed by Emmett Miller with Dr. Anderson for DXARTS, University of Washington.
+
+For a more detailed tutorial on the BlumBox and illustration of concepts presented in the above paper, see: link::Tutorials/StereoImagingTransformsIllustrated::
+
+section:: Example Workflows
+
+
 
 section:: Transforms
 
@@ -75,8 +83,11 @@ link::Classes/BlumFollowRadius:: - Encoding radius of a stereo image
 
 section:: Further Reading
 
-1. Anderson, J. L., "Classic Stereo Imaging Transforms: A Review", published in Spanish in Basso, G., Di Liscia, O. P. & Pampin, J. (editors)(2009). "Música y espacio: ciencia, tecnología y estética". Buenos Aires, Universidad Nacional de Quilmes.
+NUMBEREDLIST::
+## Anderson, J. L., "Classic Stereo Imaging Transforms: A Review", published in Spanish in Basso, G., Di Liscia, O. P. & Pampin, J. (editors)(2009). "Música y espacio: ciencia, tecnología y estética". Buenos Aires, Universidad Nacional de Quilmes.
 
-2. Streicher, Ron., and F. Alton Everest. The New Stereo Soundbook. Audio Engineering Associates, 2006.
+## Streicher, Ron., and F. Alton Everest. The New Stereo Soundbook. Audio Engineering Associates, 2006.
 
-3. American reprint: Blumlein, A. D. (1958). "British Patent Specification 394,325 'Improvements in and relating to Sound-transmission, Sound-recording and Sound-reproducing Systems'" (PDF). Journal of the Audio Engineering Society. 6 (2): 32–40.
+## American reprint: Blumlein, A. D. (1958). "British Patent Specification 394,325 'Improvements in and relating to Sound-transmission, Sound-recording and Sound-reproducing Systems'" link::http://decoy.iki.fi/dsound/ambisonic/motherlode/source/British%20patent%20specification%20394325%20Blumlein%201933.pdf:: (PDF). Journal of the Audio Engineering Society. 6 (2): 32–40.
+
+::

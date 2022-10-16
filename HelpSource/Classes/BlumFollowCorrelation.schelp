@@ -40,7 +40,7 @@ code::
 	in = SinOsc.ar([440, 440]); // in phase: 1
 	// in = SinOsc.ar(440, [0.5pi, 0.0]); // +quadrature: 0.0
 	// in = SinOsc.ar(440, [0.5pi.neg, 0.0]); // -quadrature: 0.0
-	// in = SinOsc.ar([440, LFSaw.kr(0.1).range(-440, 440)]); oscillates between in and out of phase
+	// in = SinOsc.ar([440, LFSaw.kr(0.1).range(-440, 440)]); // oscillates between in and out of phase
 
 	// Instant and average output
 	instant = BlumFollowCorrelation.ar(in, size, \instant);
