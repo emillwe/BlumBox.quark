@@ -53,13 +53,13 @@ The Blumlein Box also includes the following 5 stereo imaging analysis functions
 Returns the power of a stereo signal
 
 ### Balance
-Stereo signal balance, i.e. the ratio of the S- to M-axis
+Distribution of power along the L-R axis. 
 
 ### Correlation
-Cross-correlation of L and R channels, i.e. the "stereo-ness" of the image
+Degree of similarity between left and right channels, i.e. the distribution of power along the M-S axis
 
 ### Angle
-Apparent source direction of a stereo image in radians
+Apparent source direction in radians of a stereo image
 
 ### Radius
 Encoding radius of a stereo image

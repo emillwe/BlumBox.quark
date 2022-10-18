@@ -1,10 +1,10 @@
 TITLE:: BlumFollowBalance
 summary:: Stereo balance analysis
 categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
-related:: Classes/BlumBalance
+related:: Classes/BlumBalance, Classes/BlumFollowCorrelation
 
 DESCRIPTION::
-Analyze the balance of a stereo signal.
+Analyze the balance of a stereo signal. Balance is the distribution of power along the L-R axis.
 
 CLASSMETHODS::
 
@@ -20,7 +20,7 @@ ARGUMENT:: method
 code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
 
 returns::
-Stereo balance, between -1 and 1
+Stereo balance, between -1 and 1.
 
 
 EXAMPLES::

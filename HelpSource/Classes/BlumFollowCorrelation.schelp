@@ -1,10 +1,10 @@
 TITLE:: BlumFollowCorrelation
 summary:: Stereo correlation analysis
 categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
-
+related:: Classes/BlumFollowBalance
 
 DESCRIPTION::
-Analyze the correlation of a stereo signal.
+Analyze the degree of similarity between left and right channels of a stereo signal. Correlation is the distribution of power along the M-S axis.
 
 
 CLASSMETHODS::

@@ -71,7 +71,7 @@ link::Classes/BlumFollowBalance:: - Stereo signal balance, i.e. the ratio of the
 
 subsection:: Correlation
 
-link::Classes/BlumFollowCorrelation:: - Cross-correlation of L and R channels, i.e. the "stereo-ness" of the image
+link::Classes/BlumFollowCorrelation:: - Degree of similarity between left and right channels, i.e. the distribution of energy along the M-S axis.
 
 subsection:: Angle
 
