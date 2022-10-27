@@ -2,3 +2,64 @@ title:: Stereo Imaging Transforms Illustrated
 summary:: Introduction to stereo imaging transforms
 categories:: Libraries>Blumlein Box
 keyword::BlumBox
+
+section::Stereo Transformations
+
+subsection::MS to LR
+
+image::MStoLR.png::
+
+subsection::LR to MS
+
+image::LRtoMS.png::
+
+subsection::Stereo Rotation
+
+image::rotate.png::
+
+subsection::Stereo Width
+
+image::width.png::
+
+subsection::Stereo Balance
+
+image::balance.png::
+
+subsection::Middle Panorama
+
+image::mPan.png::
+
+subsection::Stereo Asymmetry
+
+image::asymmetry.png::
+
+subsection::Left Panorama
+
+image::lPan.png::
+
+subsection::Right Panorama
+
+image::rPan.png::
+
+section::Stereo Analyses
+
+subsection::Signal Power
+
+subsection::Stereo Balance
+
+subsection::Stereo Correlation
+
+subsection::Encoding Angle
+
+subsection::Encoding Radius
+
+section::References
+
+numberedlist::
+## Anderson, J. L., "Classic Stereo Imaging Transforms: A Review", published in Spanish in Basso, G., Di Liscia, O. P. & Pampin, J. (editors)(2009). "Música y espacio: ciencia, tecnología y estética". Buenos Aires, Universidad Nacional de Quilmes.
+
+## Streicher, Ron., and F. Alton Everest. The New Stereo Soundbook. Audio Engineering Associates, 2006.
+
+## American reprint: Blumlein, A. D. (1958). "British Patent Specification 394,325 'Improvements in and relating to Sound-transmission, Sound-recording and Sound-reproducing Systems'" link::http://decoy.iki.fi/dsound/ambisonic/motherlode/source/British%20patent%20specification%20394325%20Blumlein%201933.pdf:: (PDF). Journal of the Audio Engineering Society. 6 (2): 32–40.
+
+::
