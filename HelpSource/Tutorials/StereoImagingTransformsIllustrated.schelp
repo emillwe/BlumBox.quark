@@ -1,45 +1,308 @@
 title:: Stereo Imaging Transforms Illustrated
-summary:: Introduction to stereo imaging transforms
+summary:: Introduction to stereo imaging transforms and analysis
 categories:: Libraries>Blumlein Box
 keyword::BlumBox
 
+We'll first use the stereo scope to illustrate these transforms. Let's boot the server:
+
+code::
+s.boot
+::
+
+To display signals as lissajous patterns:
+
+code::
+// display
+(
+var scope;
+var numChannels = 2;
+
+scope = Stethoscope.new(s, numChannels);
+scope.style = 2; // Lissajous display
+)
+::
+
 section::Stereo Transformations
 
-subsection::MS to LR
+subsection::Stereo domains: LR to MS and back
 
-image::MStoLR.png::
+Our first two transforms translate between different representations of a stereo image. The left-right (LR) and middle-and-side (MS) domains are orthogonal: no information is lost transforming between the two.footnote::Anderson, J. L., "Classic Stereo Imaging Transforms: A Review", published in Spanish in Basso, G., Di Liscia, O. P. & Pampin, J. (editors)(2009). "Música y espacio: ciencia, tecnología y estética". Buenos Aires, Universidad Nacional de Quilmes.:: Note that for both transforms, each channel is the scaled sum or difference of its counterpart's channels.
 
-subsection::LR to MS
+image::MStoLR.png#Transforming from MS to LR::
 
-image::LRtoMS.png::
+
+
+image::LRtoMS.png#Transforming from LR to MS::
 
 subsection::Stereo Rotation
 
-image::rotate.png::
+Stereo rotation is the full-stereo equivalent of the Sine-Cosine panning law. Under the rotation transform, all elements of the stereo image are repositioned without any change to gain. Note that with true stereo rotation, it is possible to place the image in "phasey" regions of the stereo field, reducing mono compatibility.
 
-subsection::Stereo Width
+image::rotate.png#Stereo rotation::
 
-image::width.png::
+Let's take a listen. Evaluate the following code block to hear the rotation of two enveloped sinusoids. Note the rotation of the the lissajous pattern on the stethoscope.
 
-subsection::Stereo Balance
+code::
+(
+~rotTest = {
+    var in, inL, inR;
+    var out;
+    var lfo;
+    var env1, env2;
+    var freqMod;
 
-image::balance.png::
+    freqMod = LFNoise2.kr(3.3).range(0.99, 1.01);
 
-subsection::Middle Panorama
+    // L and R channels
+    inL = SinOsc.ar(440 * freqMod, mul: 0.3);
+    inR = SinOsc.ar(330 * freqMod, mul: 0.3);
 
-image::mPan.png::
+    // L and R envelopes
+    #env1, env2 = EnvGen.kr(
+        Env.perc(releaseTime: 0.3),
+        Impulse.kr([5, 3])
+    );
 
-subsection::Stereo Asymmetry
+    // Stereo input
+    in = [
+        inL * env1,
+        inR * env2
+    ];
 
-image::asymmetry.png::
+    lfo = LFSaw.kr(0.1).range(0, 2pi);
 
-subsection::Left Panorama
+    out = BlumRotate.ar(
+        in: in,
+        angle: lfo
+    );
 
-image::lPan.png::
+    // compare in/out signals
+	// in
+	out
+}.play
+)
+::
 
-subsection::Right Panorama
+subsection::Compression towards an axis: Width and Balance
 
-image::rPan.png::
+The width transformation adjusts the relative gains of the M and S components of the stereo signal, compressing the image towards the M- or S- axis. This is equivalent to rotating the L and R axes opposite one another by a given angle.
+
+image::width.png#Stereo width::
+
+The code below illustrates the bounds of the width transformation. On the lissajous display, observe the compression of the pattern towards one axis, then another (Note: this display is rotated 45 degrees from what one would expect to see on a goniometer. Here, the stereo L and R channels are mapped to the X- and Y- inputs, respectively).
+
+code::
+(
+~widthTest = {
+    var in, out;
+    var lfo;
+	var freq1, freq2;
+
+	freq1 = LFNoise2.kr(freq: 1000).range(330 * 0.8, 330 * 1.2);
+	freq2 = LFNoise2.kr(freq: 1000).range(440 * 0.8, 440 * 1.2);
+
+    // Select an input
+	// in = SinOsc.ar([440, 330], mul: 0.3);
+	// in = PinkNoise.ar(mul: [0.5, 0.5]);
+	in = SinOsc.ar([freq1, freq2], mul: 0.3);
+
+
+    // LFOs
+    lfo = LFTri.kr(0.1).range(-pi/4, pi/4); // alternate between fully M and fully S
+
+    out = BlumWidth.ar(in, lfo);
+
+    // compare in/out signals
+    // in
+    out
+}.play
+)
+::
+
+Stereo balance, on the other hand, adjusts the relative gains of the L and R components of the stereo signal. It is the L-R domain equivalent of the width transformation, as if rotating the M and S axes opposite one another.
+
+image::balance.png#Stereo balance::
+
+In this example, we'll hear a pair of enveloped sinusoids panned hard left and right. Modulating the balance of the stereo image results in the alternation between apparent singals. Observe how this produces a lissajous pattern similar to that of the width transform, but shifted 90 degrees.
+
+code::
+(
+~balanceTest = {
+    var inL, inR;
+    var out;
+    var env1, env2;
+    var in;
+    var lfo;
+    var freqMod;
+
+    freqMod = LFNoise2.kr(3.3).range(0.98, 1.02);
+
+    // L and R channels
+    inL = SinOsc.ar(440 * freqMod, mul: 0.3);
+    inR = SinOsc.ar(330 * freqMod, mul: 0.3);
+
+    // L and R envelopes
+    #env1, env2 = EnvGen.kr(
+        Env.perc(releaseTime: 0.3),
+        Impulse.kr([10, 7])
+    );
+
+    // Stereo input
+    in = [
+        inL * env1,
+        inR * env2
+    ];
+
+    // Other inputs
+    // in = SinOsc.ar([440, 330], mul: 0.3);
+
+    // Transform LFO
+    lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // Note that values outside these bounds will wrap
+
+    out = BlumBalance.ar(in, lfo);
+
+    // compare in/out signals
+    // in
+    out
+
+}.play;
+)
+::
+
+subsection:: Rotations of a single axis: Middle, Left, and Right Panorama, and Asymmetry
+
+Middle panorama rotates the M-axis, leaving the S-axis in place. The equation below is derived from the rotation transform applied in the MS domain.
+
+image::mPan.png#Middle panorama::
+
+In the following example, we start by defining an input signal in the MS domain. Decorrelated sinusoid appear in the side, while pink noise appears in the middle channel. After encoding the stereo signal in the LR domain, transforming the image with middle panorama rotates the noise component around the stereo field, leaving the sinusoids at the side of the image.
+
+code::
+(
+~mPanTest = {
+    var in, out;
+    var env;
+    var lfo;
+    var m, s;
+
+    // Inputs
+
+    env = EnvGen.kr(
+        envelope: Env.perc(releaseTime: 0.3),
+        gate: Impulse.kr(4.0);
+    );
+
+    // ms input
+	m = PinkNoise.ar(0.5);
+    s = SinOsc.ar(phase: [0, pi/2], mul: 0.3) * env;
+
+    in = BlumMStoLR.ar([m, s]);
+
+    // LFOs
+    // lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // standard bounds
+    lfo = LFSaw.kr(0.1).range(0, 2pi); // full rotation of m-channel
+
+    out = BlumMPan.ar(in, lfo);
+
+    // compare in/out signals
+	// in
+	out
+
+}.play
+)
+::
+
+Similarly, asymmetry is the rotation of the S-axis, leaving the M-axis in place.
+
+image::asymmetry.png#Stereo asymmetry::
+
+Like the above example, we author a stereo image in the MS domain. This time, we rotate the side component: enveloped noise. The sinusoid in the middle of the image is static.
+
+code::
+(
+~mPanTest = {
+    var in, out;
+    var env;
+    var lfo;
+    var m, s;
+
+    // Inputs
+
+    env = EnvGen.kr(
+        envelope: Env.perc(releaseTime: 0.3),
+        gate: Impulse.kr(8.0);
+    );
+
+    // ms input
+    m = SinOsc.ar(330, mul: 0.15);
+    s = PinkNoise.ar(0.8) * env;
+
+    in = BlumMStoLR.ar([m, s]);
+
+    // LFOs
+    // lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // standard bounds
+    lfo = LFSaw.kr(0.1).range(0, 2pi); // full rotation of m-channel
+
+    out = BlumAsym.ar(in, lfo);
+
+    // compare in/out signals
+	// in
+	out
+
+}.play
+)
+::
+
+Left and Right panorama are the LR domain applications of the above two transforms. Note the similarity between left panorama and asymmetry and between right and middle panorama.
+
+image::lPan.png#Left panorama::
+
+image::rPan.png#right panorama::
+
+These examples use a pair of harmonic sinusoids panned hard left and right to illustrate the rotation of only L or R channels.
+
+code::
+(
+~lPanTest = {
+    var in, out;
+    var lfo;
+
+    // Inputs
+    in = SinOsc.ar([440, 330], mul: 0.3);
+
+    // LFOs
+    lfo = LFTri.kr(0.3).range(-pi/2, pi/2); // wide bounds
+
+    out = BlumLPan.ar(in, lfo);
+
+    // compare in/out signals
+    // in
+    out
+}.play
+)
+::
+
+code::
+(
+~rPanTest = {
+
+    var in, out;
+    var lfo;
+
+    // Inputs
+    in = SinOsc.ar([330, 440], mul: 0.3);
+
+    // LFOs
+    lfo = LFTri.kr(0.3).range(-pi/2, pi/2); // wide bounds
+
+    out = BlumRPan.ar(in, lfo);
+
+    // compare in/out signals
+    // in
+    out
+}.play
+)
+::
 
 section::Stereo Analyses
 
@@ -56,7 +319,6 @@ subsection::Encoding Radius
 section::References
 
 numberedlist::
-## Anderson, J. L., "Classic Stereo Imaging Transforms: A Review", published in Spanish in Basso, G., Di Liscia, O. P. & Pampin, J. (editors)(2009). "Música y espacio: ciencia, tecnología y estética". Buenos Aires, Universidad Nacional de Quilmes.
 
 ## Streicher, Ron., and F. Alton Everest. The New Stereo Soundbook. Audio Engineering Associates, 2006.
 

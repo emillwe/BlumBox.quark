@@ -21,7 +21,7 @@ ARGUMENT:: method
 code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
 
 returns::
-Stereo correlation, between -1 and 1. A return value of -1 Corresponds to fully out of phase L and R channels, while identical L and R channels will return 1.
+Stereo correlation: a value on the interval [-1, 1]. A return value of -1 corresponds to L and R channels fully out of phase, while identical L and R channels will return 1. L and R signals in quadrature will return a correlation of 0.
 
 EXAMPLES::
 
