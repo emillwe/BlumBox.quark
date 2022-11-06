@@ -23,6 +23,11 @@ code::\instant:: for instantaneous analysis or code::\average:: for time-average
 returns::
 Stereo correlation: a value on the interval [-1, 1]. A return value of -1 corresponds to L and R channels fully out of phase, while identical L and R channels will return 1. L and R signals in quadrature will return a correlation of 0.
 
+table::
+## emphasis::position:: || strong::middle:: || strong::de-correlated:: || strong::side::
+## emphasis::value:: || code::1.0:: || code::0.0:: || code::-1.0::
+::
+
 EXAMPLES::
 
 code::

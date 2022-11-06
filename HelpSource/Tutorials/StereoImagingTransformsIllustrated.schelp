@@ -306,15 +306,315 @@ code::
 
 section::Stereo Analyses
 
+This tutorial is derived from lecture notes from DXARTS 462: Digital Sound Processing, University of Washington, Spring 2022. footnote::Anderson, J. L., (2022). Week 8d - Spatial Processing IV: Image Analysis [Lecture Notes]. Available: link::Tutorials/DXARTS-462/08-schelp/08d-Spatial-Processing-Analysis::::
+
 subsection::Signal Power
 
-subsection::Stereo Balance
+The following analysis functions assume that the input is a stereo signal. To begin, let's consider a mono source encoded with the Sine-Cosine Panning Law. The following are the scalars with which to multiply the mono signal to derive the left and right stereo channels.
 
-subsection::Stereo Correlation
+image::08d_eq01.png#Sine-Cosine coefficients::
 
-subsection::Encoding Angle
+image::08d_eq02.png#Applying coefficients to the input to place it in the stereo field::
 
-subsection::Encoding Radius
+Though all BlumBox analysis functions have a flag for instantaneous analysis, we'll focus on their time averaged counterparts. We'll denote time averaging of a signal with angle brackets:
+
+image::08d_eq03.png#Time averaging::
+
+The emphasis::time averaged power:: of the input monphonic signal is calculated:
+
+image::08d_eq04.png::
+
+With a signal encoded with the link::Tutorials/DXARTS-461/02-schelp/02e-Visualization-Panorama-Acknowledge#Sine-cosine%20panning%20law#sine-cosine:: law, let's review how to find the power of the encoded input signal:
+
+image::08d_eq05.png::
+
+What we see is that given the link::https://en.wikipedia.org/wiki/Pythagorean_trigonometric_identity##Pythagorean trigonometric identity::, the coefficients emphasis::gL:: and emphasis::gR:: drop out, and we can directly extract the emphasis::time averaged power:: of the input monphonic signal. We can re-write for clarity:
+
+image::08d_eq06.png::
+
+The BlumBox includes an analysis function for both instantaneous and time averaged stereo signal power: link::Classes/BlumFollowPower::.
+
+subsection::Cartesian image analysis: stereo balance and correlation
+
+The emphasis::time averaged balance:: indicates how the power is balanced across the emphasis::left-right axis:: of the stereo field, and can be found:
+
+image::08d_eq07.png::
+
+And solving for the trigonometric expression:
+
+image::08d_eq08.png::
+
+The returned value varies between code::1:: and code::-1::, and these are mapped across the image:
+
+table::
+## emphasis::position:: || strong::left:: || strong::center:: || strong::right::
+## emphasis::value:: || code::1.0:: || code::0.0:: || code::-1.0::
+::
+
+To find stereo signal balance, we'll use the BlumBox's link::Classes/BlumFollowBalance::.
+
+emphasis::Time averaged correlation:: indicates how the power is balanced across the emphasis::middle-side axis:: of the stereo field. We can think of this value as indicating  emphasis::how stereo:: the signal is:
+
+image::08d_eq09.png::
+
+And solving for the trigonometric expression:
+
+image::08d_eq10.png::
+
+The returned value varies between code::1:: and code::-1:: and these are mapped:
+
+table::
+## emphasis::position:: || strong::middle:: || strong::de-correlated:: || strong::side::
+## emphasis::value:: || code::1.0:: || code::0.0:: || code::-1.0::
+::
+
+See Kendall's discussion as to how these values of emphasis::correlation:: audition. footnote:: Kendall, G. S. 1995. "The Decorrelation of Audio Signals and Its Impact on Spatial Imagery". COMPUTER MUSIC JOURNAL. 19 (4): 71-87.::
+
+link::Classes/BlumFollowCorrelation:: gives us a quick way to return stereo correlation.
+
+subsection::Polar image analysis: Encoding angle and radius
+
+Both link::#Balance%20Analysis#balance:: and link::#Correlation%20Analysis#correlation:: are returned to us as trigonometric expressions:
+
+image::08d_eq11.png::
+
+You'll notice that we can extract the emphasis::panorama angle:::
+
+image::08d_eq12.png::
+
+
+The Blumlein Box function link::Classes/BlumFollowAngle:: does this for us!
+
+Similarly, using the trigonometric relationship between balance and correlation, we can extract the encoding radius of the stereo signal with link::Classes/BlumFollowRadius::.
+
+What use is this?
+
+section::Synthesis & Analysis
+
+Recall our discussion of link::Tutorials/DXARTS-461/10-schelp/10-Stereo-Synthesis#Stocastic%20signals#synthesizing broad images via stocastic sources::. SuperCollider's  link::Tutorials/DXARTS-461/09-schelp/09a-SS-Complex-Sources#Colored%20Noise#colored noise:: generators can be used to return emphasis::decorrelated:: signals. Given a emphasis::decorrelated:: emphasis::SOURCE::, we can use link::Tutorials/DXARTS-462/08-schelp/08b-Spatial-Processing-Imaging-Transforms##stereo imaging transforms:: to further shape the panorama of the generated image. In the example below we'll use link::Tutorials/DXARTS-462/08-schelp/08b-Spatial-Processing-Imaging-Transforms#Width%20Transform#width:: followed by link::Tutorials/DXARTS-462/08-schelp/08b-Spatial-Processing-Imaging-Transforms#Rotate%20Transform#rotate::.
+
+We'll then display an analysis of link::#Balance%20Analysis#balance:: and link::#Correlation%20Analysis#correlation:: of the synthesized image in a link::Classes/Stethoscope##scope::. emphasis::Left-Right:: link::#Balance%20Analysis#balance:: is mapped to the x-axis and emphasis::Middle-Side:: link::#Correlation%20Analysis#correlation:: to the y-axis. Additionally, we'll link::Classes/UGen#-poll#poll:: the analyzed link::#Angle%20Analysis#panorama angle:: to the post window.
+
+
+subsection::Realtime Example
+
+We'll render this in realtime. Go ahead and start up the realtime server:
+
+code::
+
+(
+var scope;
+var numChannels = 2;
+
+// start server!
+Server.default = s = Server.local.boot; // use this for SC-IDE
+scope = Stethoscope.new(s, numChannels);
+
+// display!
+scope = Stethoscope.new(s, numChannels);
+scope.style = 2; // Lissajous display
+)
+
+::
+
+____________________
+
+Once the realtime server is booted, evaluate the codeblock below. Notice, there are several example note calls to try.
+
+note::Un-comment only one note example at a time!::
+
+code::
+(
+///////////////// DEFINE VARIABLES //////////////////
+
+var score, pinkSynthDef, analyDef;
+var start, dur, gain, panAngle, widthAngle;
+var dispBus, group;
+
+///////////////// DEFINE SYNTHS //////////////////
+
+pinkSynthDef = CtkSynthDef.new(\pink, { |dur, gain = 0.0, ris = 0.01, dec = 0.01, panAngle = 0.0, widthAngle = 0.0|
+    var bus = 0;      // var to specify output bus: first output
+    var amp;          // a few vars for synthesis
+    var sig, out;     // vars assigned to audio signals
+    var ampEnv;       // var for envelope signal
+
+
+    // calcs
+    amp = gain.dbamp;  // convert from gain in dB to linear amplitude scale
+
+    // the amplitude envelope nested in the UGen that synthesises the envelope
+    ampEnv = EnvGen.kr(
+        Env.linen(ris, 1.0 - (ris + dec), dec),
+        timeScale: dur
+    );
+
+    // generate test signal, decorrelated PinkNoise
+	sig = PinkNoise.ar([1, 1]);  // <-- Panning happens here!
+
+    // spatial filter - width & rotate
+	sig = BlumWidth.ar(sig, widthAngle); // <-- And here!
+	sig = BlumRotate.ar(sig, panAngle); // <-- And here!
+
+	// post pan angle (for display)
+	panAngle.poll(label: "pan_____");  // <-- Quote this out if you don't want to post the angle
+
+	// apply envelope
+	sig = amp * ampEnv * sig;
+
+    // imaged
+    out = sig;
+
+    // out!!
+    Out.ar(bus, out)
+});
+
+
+// a simple synthDef to analize the stereo image
+// in terms of stereo balance and correlation
+// we'll use SC3's X/Y scope to view!
+analyDef = CtkSynthDef.new(\analySynth, { |dur, aveTime = 0.005, radius = 0.1, receiveBus = 0, dispBus|
+    var inSig, dispSig;
+    var numChannels = 2;
+	var circle;
+	var angle;
+	var balance, correlation;
+	var numSamps;
+
+	// calculate number of samples for time averaged analysis
+	numSamps = aveTime * SampleRate.ir;
+
+	// generate "noisy circle"
+	circle = (SinOsc.ar(ControlRate.ir, [pi/2, 0.0]) * LFNoise2.ar(ControlRate.ir, [1, 1]));
+
+    // receive test signal
+    inSig = In.ar(receiveBus, numChannels);
+
+	// analysis - find angle (for display)
+	angle = BlumFollowAngle.ar(inSig, numSamps, method: 'average');
+
+	// post angle analysis result in degrees
+	(angle*180/pi).poll(label: "analyzed");  // <-- Quote this out if you don't want to post the angle
+
+	// analysis - find balance & correlation
+	balance = BlumFollowBalance.ar(inSig, numSamps, method: 'average');
+	correlation = BlumFollowCorrelation.ar(inSig, numSamps, method: 'average');
+
+	dispSig = [balance, correlation];  // the "actual" analysis
+
+	dispSig = ((1.0 - radius) * dispSig) + (radius * circle);  // add the "noisy circle"
+	dispSig = [-1, 1] * dispSig;  // remap for X/Y display
+
+    // outputs here
+    Out.ar(
+        dispBus, // analysis send out
+        dispSig
+    );
+});
+
+
+///////////////// SET VARIABLE VALUES //////////////////
+
+// create a score
+score = CtkScore.new;
+
+
+// create the sendBus
+dispBus = CtkAudio.new(2); // a two channel (stereo) bus...
+                           // ... which is what we'll be sending!
+
+// create a node group
+group = CtkGroup.new;
+
+
+///////////////// SET PARAMETER VALUES //////////////////
+
+// common values...
+start = 0.0;
+dur = 20.0;
+gain = -6.0;
+
+// Example 1
+//
+// mono pink noise - pan from -S to +S
+//
+// same as PAN!
+//
+panAngle = CtkControl.env(Env.new([-90.0, 90.0].degrad, [1.0], \lin), timeScale: dur);
+widthAngle = -45.0;
+
+
+// // Example 2
+// //
+// // partially decorrelated pink noise - pan from -S to +S
+// //
+// // ROTATE a stereo image
+// //
+// panAngle = CtkControl.env(Env.new([-90.0, 90.0].degrad, [1.0], \lin), timeScale: dur);
+// widthAngle = -22.5;
+
+
+// // Example 3
+// //
+// // mono - decorrelated - mono pink noise - pan from +R to +L
+// //
+// // same as BALANCE!
+// //
+// panAngle = -45.0;
+// widthAngle = CtkControl.env(Env.new([-45.0, 45.0].degrad, [1.0], \lin), timeScale: dur);
+
+
+// // Example 4
+// //
+// // mono - decorrelated - mono pink noise - pan from +M to +S
+// //
+// // same as WIDTH!
+// //
+// panAngle = 0.0;
+// widthAngle = CtkControl.env(Env.new([-45.0, 45.0].degrad, [1.0], \lin), timeScale: dur);
+
+
+///////////////// POPULATE THE SCORE //////////////////
+
+// add to score
+score.add(group);
+score.add(dispBus);
+
+// define the note / add to score
+// a single note
+score.add(
+	pinkSynthDef.note(starttime: start, duration: dur)
+	.dur_(dur)
+	.gain_(gain)
+	.panAngle_(panAngle)
+	.widthAngle_(widthAngle)
+);
+
+
+
+
+// analysis
+score.add(
+    analyDef.note(starttime: start, duration: dur, addAction: \tail, target: group)
+    .dur_(dur)
+    .dispBus_(dispBus)
+);
+
+
+// view the analysis, using the X/Y scope
+s.scope(2, index: dispBus.bus).style = 2;
+
+///////////////// PLAY THE SCORE //////////////////
+
+// play the score
+score.play;
+
+
+// free
+dispBus.free;
+)
+::
+
 
 section::References
 

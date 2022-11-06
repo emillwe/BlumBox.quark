@@ -22,6 +22,11 @@ code::\instant:: for instantaneous analysis or code::\average:: for time-average
 returns::
 Stereo balance: a value on the interval [-1, 1]. The bounds correspond respectively to power fully in the right or left channel.
 
+table::
+## emphasis::position:: || strong::left:: || strong::center:: || strong::right::
+## emphasis::value:: || code::1.0:: || code::0.0:: || code::-1.0::
+::
+
 
 EXAMPLES::
 
