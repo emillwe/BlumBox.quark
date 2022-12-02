@@ -25,40 +25,39 @@ Signal encoding angle
 EXAMPLES::
 
 code::
-// Run for 3s and plot
 (
 ~angleTest = {
-	var in, out;
-	var lfo, rotLFO;
-	var instant, average;
-	var makeUpDelay;
-	var size = 2048;
-	var halfSize = (size / 2).asInteger;
+	var in;
+	var lfo;
+	var rotated;
+	var analysis;
 
-	// Inputs
-	in = SinOsc.ar([440, 440]);
-	// in = PinkNoise.ar(mul: [1.0, 1.0]);
+	// input: pink noise
+	in = PinkNoise.ar([0.3, 0.3]);
 
-	// LFOs
-	rotLFO = LFSaw.kr(0.3).range(0, 2pi); // angle oscillates between +/- pi/2
+	// make L and R channels identical (i.e. fully correlated)
+	// NOTE: All Blumlein Box UGens require a 2-channel input.
+	// Without this transformation, rotation will not be apparent with a noise input
+	in = BlumWidth.ar(in, -45);
 
-	// apply lfo
-	in = BlumRotate.ar(in, rotLFO);
+	// Rotation modulator: sinusoid between L and R bounds
+	lfo = SinOsc.kr(0.1).range(-45.degrad, 45.degrad);
 
-	// Instant and average output
-	instant = BlumFollowAngle.ar(in, size: size, method: \instant);
-	average = BlumFollowAngle.ar(in, size: size, method: \average);
+	// rotate input signal
+	// NOTE: rotating a fully correlated signal is identical to panning!
+	rotated = BlumRotate.ar(in, lfo);
 
-	// match delay of instant and average for comparison
-	makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
-	average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+	// analyze angle of rotated signal
+	analysis = BlumFollowAngle.ar(
+		in: rotated,
+		method: 'average'
+	);
 
-	// Compare instant vs average
-	// out = (instant.neg + average);
-	// out = average;
-	out = instant;
+	// post analysis in degrees
+	analysis.raddeg.poll(label: "analyzed");
 
-	out.poll;
-}.plot(3)
+	// listen to rotated signal
+	rotated
+}.play
 )
 ::

@@ -155,7 +155,7 @@ BlumRotate : BlumUGen {
 		var left, right;
 
 		// normalize radians for Rotate2 pos argument
-		var pos = angle / -pi;
+		var pos = angle / pi;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
@@ -185,7 +185,7 @@ BlumRotate : BlumUGen {
 		var left, right;
 
 		// normalize radians for Rotate2 pos argument
-		var pos = angle / -pi;
+		var pos = angle / pi;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
