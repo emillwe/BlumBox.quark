@@ -17,6 +17,8 @@ The stereo input, an array: [L, R]
 ARGUMENT:: size
 Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
 
+Note:: For instantaneous analysis, size must be a power of two!::
+
 ARGUMENT:: method
 code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
 
@@ -31,36 +33,41 @@ table::
 EXAMPLES::
 
 code::
-// Run for 3s and plot
 (
 ~correlationTest = {
-	var in, out;
-	var instant, average;
-	var size = 2048;  // default
-	var makeUpDelay;
-	var halfSize = (size / 2).asInteger;
+    var in, out;
+	var phaseLfo;
+    var instant, average;
+    var size = 2048;  // default
+    var makeUpDelay;
+    var halfSize = (size / 2).asInteger;
 
-	// Inputs
-	// in = SinOsc.ar([440, -440]); // out of phase: -1
-	in = SinOsc.ar([440, 440]); // in phase: 1
-	// in = SinOsc.ar(440, [0.5pi, 0.0]); // +quadrature: 0.0
-	// in = SinOsc.ar(440, [0.5pi.neg, 0.0]); // -quadrature: 0.0
-	// in = SinOsc.ar([440, LFSaw.kr(0.1).range(-440, 440)]); // oscillates between in and out of phase
+	phaseLfo = SinOsc.kr(0.1).range(0, pi);
 
-	// Instant and average output
-	instant = BlumFollowCorrelation.ar(in, size, \instant);
-	average = BlumFollowCorrelation.ar(in, size, \average);
+	// analysis input: oscillate between fully correlated and fully decorrelated
+	in = SinOsc.ar([330, 330], phase: [0, phaseLfo], mul: 0.3);
 
-	// match delay of instant and average for comparison
-	makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
-	average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+    // Instant and average output
+    instant = BlumFollowCorrelation.ar(in, size, \instant);
+    average = BlumFollowCorrelation.ar(in, size, \average);
 
-	// Compare instant vs average
-	// out = (instant.neg + average);
-	// out = average;
-	out = instant;
+    // match delay of instant and average for comparison
+    makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
+    average = DelayN.ar(average, makeUpDelay, makeUpDelay);
 
-	out.poll
-}.plot(3)
+    // Select one: ompare instant vs average
+    // out = average;
+    out = instant;
+    // out = (instant.neg + average); // difference between instantaneous and average
+
+	// write analysis to post window
+	out.poll(label: "analyzed");
+
+	// listen to source
+	in
+
+}.play()
 )
 ::
+
+NOTE:: How does the apparent stereo image change as the correlation between L and R channels changes?::

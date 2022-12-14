@@ -22,7 +22,7 @@ BlumEval : BlumUGen {
 	classvar <>reg;
 
 	*initClass {
-		reg = -192;  // regularization factor
+		reg = -192;  // regularization factor (dB)
 	}
 }
 

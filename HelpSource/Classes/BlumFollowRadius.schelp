@@ -16,6 +16,8 @@ The stereo input, an array: [L, R]
 ARGUMENT:: size
 Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
 
+Note:: For instantaneous analysis, size must be a power of two!::
+
 ARGUMENT:: method
 code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
 
@@ -25,41 +27,53 @@ Signal encoding radius
 
 EXAMPLES::
 
+NOTE:: In the following example, note that with a constant amplitude, rotating a stereo signal has no effect on its analyzed radius!::
+
 code::
-// Run for 3s and plot
 (
 ~radiusTest = {
-	var in, out;
-	var lfo, rotLFO;
-	var instant, average;
-	var makeUpDelay;
-	var size = 2048;
-	var halfSize = (size / 2).asInteger;
+    var in, out;
+    var amp, rotLFO;
+    var instant, average;
+    var makeUpDelay;
+    var size = 2048;
+    var halfSize = (size / 2).asInteger;
 
-	// Inputs
-	in = SinOsc.ar([440, 440]); // note constant radius for sinusoids
-	// in = PinkNoise.ar(mul: [1.0, 1.0]);
+	// amplitude: select one!
+	amp = SinOsc.kr(0.5).range(0.05, 0.25);
+	// amp = 0.25; // constant amplitude
 
-	// LFOs
-	rotLFO = LFSaw.kr(0.1).range(-pi/2, pi/2); // rotation angle oscillates between +/- pi/2
+    // Inputs: select one
+    in = SinOsc.ar([440, 330]);
+    // in = PinkNoise.ar();
 
-	// apply lfo
+	// rotation modulator
+    rotLFO = LFSaw.kr(0.1).range(-pi/2, pi/2); // rotation angle oscillates between +/- pi/2
+
+    // apply rotation
 	in = BlumRotate.ar(in, rotLFO);
 
-	// Instant and average output
-	instant = BlumFollowRadius.ar(in, size: size, method: \instant);
-	average = BlumFollowRadius.ar(in, size: size, method: \average);
+	// apply amplitude modulation
+	in = in * amp;
 
-	// match delay of instant and average for comparison
-	makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
-	average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+    // Instant and average output
+    instant = BlumFollowPower.ar(in, method: \instant);
+    average = BlumFollowPower.ar(in, method: \average);
 
-	// Compare instant vs average
-	// out = (instant.neg + average);
-	// out = average;
-	out = instant;
+    // match delay of instant and average for comparison
+    makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
+    average = DelayN.ar(average, makeUpDelay, makeUpDelay);
 
-	out.poll;
-}.plot(3)
+    // Select one: ompare instant vs average
+	out = average;
+	// out = instant;
+    // out = (instant.neg + average); // difference between instantaneous and average
+
+	// write analysis to post window
+	out.poll(label: "analyzed");
+
+	// listen to source
+	in
+}.play()
 )
 ::

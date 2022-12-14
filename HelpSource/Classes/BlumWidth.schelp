@@ -36,7 +36,7 @@ code::
 	in = PinkNoise.ar(mul: [0.5, 0.5]);
 
 	// LFOs
-	lfo = LFTri.kr(0.1).range(-pi/4, pi/4); // alternate between fully M and fully S
+	lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // alternate between fully M and fully S
 
 	out = BlumWidth.ar(in, lfo);
 

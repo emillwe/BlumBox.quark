@@ -23,38 +23,27 @@ spatial processing.
 
 code::
 (
-// Processing in the MS domain: wide filter
+// Processing in the MS domain: wide AM
 ~msTest = {
-	var in, out;
-	var mid, side;
+    var in, out;
+    var mid, side;
 
-	// stereo input
-	in = LFSaw.ar([220, 221], mul: 0.3);
+    // stereo input
+    in = LFSaw.ar([219, 221], mul: 0.3);
 
-	// transform to MS domain
-	#mid, side = BlumLRtoMS.ar(in);
+    // transform to MS domain
+    #mid, side = BlumLRtoMS.ar(in);
 
-	// filter M channel
-	mid = LPF.ar(
-		in: mid,
-		freq: 1000,
-		mul: 1.5
-	);
+	// apply LFO only to S channel
+	side = SinOsc.kr(220 / 4,0) * side;
 
-	// filter S channel
-	side = HPF.ar(
-		in: side,
-		freq: 1000,
-		mul: 1.5
-	);
+    // recompose MS signal
+    out = [mid, side];
 
-	// recompose MS signal
-	out = [mid, side];
+    // transform back to LR domain
+    out = BlumMStoLR.ar(out);
 
-	// transform back to LR domain
-	out = BlumMStoLR.ar(out);
-
-	// compare in/out signals
+    // compare in/out signals
 	// in
 	out
 }.play

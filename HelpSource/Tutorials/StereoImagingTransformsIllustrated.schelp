@@ -220,7 +220,7 @@ Like the above example, we author a stereo image in the MS domain. This time, we
 
 code::
 (
-~mPanTest = {
+~asymTest = {
     var in, out;
     var env;
     var lfo;
@@ -324,7 +324,7 @@ The emphasis::time averaged power:: of the input monphonic signal is calculated:
 
 image::averagePower.png#Time Averaged Power::
 
-With a signal encoded with the link::Tutorials/DXARTS-461/02-schelp/02e-Visualization-Panorama-Acknowledge#Sine-cosine%20panning%20law#sine-cosine:: law, let's review how to find the power of the encoded input signal:
+With a signal encoded with the link::Classes/Pan2##sine-cosine:: law, let's review how to find the power of the encoded input signal:
 
 image::power1.png::
 
@@ -374,7 +374,7 @@ link::Classes/BlumFollowCorrelation:: gives us a quick way to return stereo corr
 
 subsection::Polar image analysis: Encoding angle and radius
 
-Both link::#Balance%20Analysis#balance:: and link::#Correlation%20Analysis#correlation:: are returned to us as trigonometric expressions:
+Both link::Classes/BlumFollowBalance##balance:: and link::Classes/BlumFollowCorrelation##correlation:: are returned to us as trigonometric expressions:
 
 image::timeAveragedBalance.png::
 image::timeAveragedCorrelation.png::
@@ -393,302 +393,295 @@ What use is this?
 
 section::Synthesis & Analysis
 
-Recall our discussion of link::Tutorials/DXARTS-461/10-schelp/10-Stereo-Synthesis#Stocastic%20signals#synthesizing broad images via stocastic sources::. SuperCollider's  link::Tutorials/DXARTS-461/09-schelp/09a-SS-Complex-Sources#Colored%20Noise#colored noise:: generators can be used to return emphasis::decorrelated:: signals. Given a emphasis::decorrelated:: emphasis::SOURCE::, we can use link::Tutorials/DXARTS-462/08-schelp/08b-Spatial-Processing-Imaging-Transforms##stereo imaging transforms:: to further shape the panorama of the generated image. In the example below we'll use link::Tutorials/DXARTS-462/08-schelp/08b-Spatial-Processing-Imaging-Transforms#Width%20Transform#width:: followed by link::Tutorials/DXARTS-462/08-schelp/08b-Spatial-Processing-Imaging-Transforms#Rotate%20Transform#rotate::.
+SuperCollider's link::Classes/PinkNoise##colored noise:: generators can be used to return emphasis::decorrelated:: signals. Given a emphasis::decorrelated:: emphasis::SOURCE::, we can use link::Overviews/BlumBoxIntro##stereo imaging transforms:: to further shape the panorama of the generated image. In the example below we'll use link::Classes/BlumWidth##width:: followed by link::Classes/BlumRotate##rotate::.
 
-We'll then display an analysis of link::#Balance%20Analysis#balance:: and link::#Correlation%20Analysis#correlation:: of the synthesized image in a link::Classes/Stethoscope##scope::. emphasis::Left-Right:: link::#Balance%20Analysis#balance:: is mapped to the x-axis and emphasis::Middle-Side:: link::#Correlation%20Analysis#correlation:: to the y-axis. Additionally, we'll link::Classes/UGen#-poll#poll:: the analyzed link::#Angle%20Analysis#panorama angle:: to the post window.
+We'll then display an analysis of link::Classes/BlumFollowBalance##balance:: and link::Classes/BlumFollowCorrelation##correlation:: of the synthesized image in a link::Classes/Stethoscope##scope::. emphasis::Left-Right:: balance is mapped to the x-axis and emphasis::Middle-Side:: correlation to the y-axis. Additionally, we'll link::Classes/UGen#-poll#poll:: the analyzed link::Classes/BlumFollowAngle##panorama angle:: to the post window.
 
 
 subsection::Realtime Example
 
 note::For those using the Composer's Toolkit, see link::Tutorials/CTKanalysis#CTK Imaging Analysis::
 
-We'll render this in realtime. Go ahead and start the realtime server:
-
-code::
-
-(
-var scope;
-var numChannels = 2;
-
-// start server!
-Server.default = s = Server.local.boot; // use this for SC-IDE
-scope = Stethoscope.new(s, numChannels);
-
-// display!
-scope = Stethoscope.new(s, numChannels);
-scope.style = 2; // Lissajous display
-)
-
-::
+We'll render this in realtime.
 
 ____________________
 
-Once the realtime server is booted, evaluate the codeblock below. Notice, there are several example note calls to try.
+Evaluate the codeblock below. Notice, there are several example note calls to try.
 
 note::Un-comment only one note example at a time!::
 
 code::
 (
-var scope;
-var numChannels = 2;
-
-// start server!
-Server.default = s = Server.local.boot; // use this for SC-IDE
-scope = Stethoscope.new(s, numChannels);
-
-// display!
-scope = Stethoscope.new(s, numChannels);
-scope.style = 2; // Lissajous display
-)
-
-(
 ///////////////// DEFINE VARIABLES //////////////////
 
 var score, pinkSynthDef, analyDef, envDef;
 var start, dur, gain, panAngle, widthAngle;
-var dispBus, ctrlBus, group;
+var outBus, dispBus, dispBusIndex, ctrlBus, group;
+var pink, envCtrl, analySynth, server;
 
-///////////////// DEFINE SYNTHS //////////////////
+server = Server.default;
 
-pinkSynthDef = SynthDef.new(\pink, { |dur, gain = 0.0, ris = 0.01, dec = 0.01, ctrlBus = 4|
-    var bus = 0;      // var to specify output bus: first output
-    var amp;          // a few vars for synthesis
-    var sig, out;     // vars assigned to audio signals
-	var ampEnv;       // var for envelope signal
-	var panAngle, widthAngle; // read from control bus
-	var doneAction = Done.freeSelf;
-	var numCtrlChans = 2; // control bus has two signals
-    // calcs
-    amp = gain.dbamp;  // convert from gain in dB to linear amplitude scale
+server.waitForBoot({
 
-    // the amplitude envelope nested in the UGen that synthesises the envelope
-    ampEnv = EnvGen.kr(
-        Env.linen(ris, 1.0 - (ris + dec), dec),
-        timeScale: dur,
-		doneAction: doneAction
-    );
+	///////////////// DEFINE SYNTHS //////////////////
 
-	// read pan and with angles from control bus
-	#panAngle, widthAngle = In.kr(ctrlBus, numCtrlChans);
-
-	// post pan angle in degrees (for display)
-	panAngle.raddeg.poll(label: "pan_____");  // <-- Quote this out if you don't want to post the angle
-
-    // generate test signal, decorrelated PinkNoise
-	sig = PinkNoise.ar([1, 1]);  // <-- Imaging happens here!
-
-    // stereo imaging - width & rotate
-	sig = BlumWidth.ar(sig, widthAngle); // <-- And here!
-	sig = BlumRotate.ar(sig, panAngle); // <-- And here!
-
-	// apply envelope
-	sig = amp * ampEnv * sig;
-
-    // imaged
-    out = sig;
-
-    // out!!
-    Out.ar(bus, out)
-}).add;
-
-envDef = SynthDef.new(\envCtrl,
-	{ |dur = 20.0, panStart = 0.0, panEnd = 0.0, widthStart = 0.0, widthEnd = 0.0, ctrlBus = 4|
-		var panEnv, widthEnv;
-		var ctrlSig;
+	// audio source: pink noise
+	SynthDef.new(\pink, { |dur, gain = 0.0, ris = 0.01, dec = 0.01, outBus, ctrlBus|
+		var hardwareOut = 0;  // bus index for hardware output
+		var amp;          // a few vars for synthesis
+		var sig, out;     // vars assigned to audio signals
+		var ampEnv;       // var for envelope signal
+		var panAngle, widthAngle; // signals read from control bus
 		var doneAction = Done.freeSelf;
+		var numCtrlChans = 2; // control bus has two signals
 
-		panEnv = EnvGen.kr(
-			envelope: Env.new([panStart, panEnd], [1.0], \lin),
+		// calcs
+		amp = gain.dbamp;  // convert from gain in dB to linear amplitude scale
+
+		// the amplitude envelope nested in the UGen that synthesises the envelope
+		ampEnv = EnvGen.kr(
+			Env.linen(ris, 1.0 - (ris + dec), dec),
 			timeScale: dur,
 			doneAction: doneAction
 		);
 
-		widthEnv = EnvGen.kr(
-			envelope: Env.new([widthStart, widthEnd], [1.0], \lin),
-			timeScale: dur
+		// read pan and with angles from control bus
+		#panAngle, widthAngle = In.kr(ctrlBus, numCtrlChans);
+
+		// post pan angle in degrees (for display)
+		panAngle.raddeg.poll(label: "pan_____");  // <-- Quote this out if you don't want to post the angle
+
+		// generate test signal, decorrelated PinkNoise
+		sig = PinkNoise.ar([1, 1]);  // <-- Imaging happens here!
+
+		// stereo imaging - width & rotate
+		sig = BlumWidth.ar(sig, widthAngle); // <-- And here!
+		sig = BlumRotate.ar(sig, panAngle); // <-- And here!
+
+		// apply envelope
+		sig = amp * ampEnv * sig;
+
+		// imaged
+		out = sig;
+
+		// out!!
+		Out.ar(outBus, out); // private bussing
+		Out.ar(hardwareOut, out); // hardware output
+	}).add;
+
+	// envelope generator for width and rotation
+	SynthDef.new(\envCtrl,
+		{ |dur = 20.0, panStart = 0.0, panEnd = 0.0, widthStart = 0.0, widthEnd = 0.0, ctrlBus|
+			var panEnv, widthEnv;
+			var ctrlSig;
+			var doneAction = Done.freeSelf;
+
+			panEnv = EnvGen.kr(
+				envelope: Env.new([panStart, panEnd], [1.0], \lin),
+				timeScale: dur,
+				doneAction: doneAction
+			);
+
+			widthEnv = EnvGen.kr(
+				envelope: Env.new([widthStart, widthEnd], [1.0], \lin),
+				timeScale: dur
+			);
+
+			ctrlSig = [panEnv, widthEnv];
+
+			Out.kr(ctrlBus, ctrlSig)
+		}
+	).add;
+
+	// a simple synthDef to analize the stereo image
+	// in terms of stereo balance and correlation
+	// we'll use SC3's X/Y scope to view!
+	SynthDef.new(\analySynth, { |dur, aveTime = 0.005, radius = 0.1, receiveBus, dispBus|
+		var inSig, dispSig;
+		var numChannels = 2;
+		var circle;
+		var angle;
+		var balance, correlation;
+		var numSamps;
+
+		// select instantaneous vs time-averaged analysis
+		var method = 'average';
+		// var method = 'instant';
+
+		// calculate number of samples for time averaged analysis
+		numSamps = aveTime * SampleRate.ir;
+
+		// for instantaneous analysis, round number of samples to next power of 2
+		(method == 'instant').if({ numSamps = 2 ** (log(numSamps)/log(2)).ceil });
+
+		// generate "noisy circle"
+		circle = (SinOsc.ar(ControlRate.ir, [pi/2, 0.0]) * LFNoise2.ar(ControlRate.ir, [1, 1]));
+
+		// receive test signal
+		inSig = In.ar(receiveBus, numChannels);
+
+		// analysis - find angle (for display)
+		angle = BlumFollowAngle.ar(inSig, numSamps, method: 'average');
+
+		// post angle analysis result in degrees
+		(angle.raddeg).poll(label: "analyzed");  // <-- Quote this out if you don't want to post the angle
+
+		// analysis: find balance & correlation
+		balance = BlumFollowBalance.ar(inSig, numSamps, method: 'average');
+		correlation = BlumFollowCorrelation.ar(inSig, numSamps, method: 'average');
+
+		dispSig = [balance, correlation];
+
+		dispSig = ((1.0 - radius) * dispSig) + (radius * circle);  // add the "noisy circle"
+		dispSig = [-1, 1] * dispSig;  // remap for X/Y display
+
+		// outputs here
+		Out.ar(
+			dispBus, // analysis send outs
+			dispSig
 		);
+	}).add;
 
-		ctrlSig = [panEnv, widthEnv];
+	server.sync;
 
-		Out.kr(ctrlBus, ctrlSig)
-	}
-).add;
+	///////////////// SET VARIABLE VALUES //////////////////
 
-// a simple synthDef to analize the stereo image
-// in terms of stereo balance and correlation
-// we'll use SC3's X/Y scope to view!
-analyDef = SynthDef.new(\analySynth, { |dur, aveTime = 0.005, radius = 0.1, receiveBus = 0, dispBus|
-    var inSig, dispSig;
-    var numChannels = 2;
-	var circle;
-	var angle;
-	var balance, correlation;
-	var numSamps;
+	// create the bus for hardware output
+	outBus = Bus.audio(server: server, numChannels: 2);
 
-	// calculate number of samples for time averaged analysis
-	numSamps = aveTime * SampleRate.ir;
+	// create the sendBus: a two channel (stereo) bus
+	dispBus = Bus.audio(server: server, numChannels: 2);
 
-	// generate "noisy circle"
-	circle = (SinOsc.ar(ControlRate.ir, [pi/2, 0.0]) * LFNoise2.ar(ControlRate.ir, [1, 1]));
+	// control bus for pan and width angle parameters
+	ctrlBus = Bus.control(server: server, numChannels: 2);
 
-    // receive test signal
-    inSig = In.ar(receiveBus, numChannels);
+	// create a node group
+	group = Group.new();
 
-	// analysis - find angle (for display)
-	angle = BlumFollowAngle.ar(inSig, numSamps, method: 'average');
+	server.sync;
 
-	// post angle analysis result in degrees
-	(angle.raddeg).poll(label: "analyzed");  // <-- Quote this out if you don't want to post the angle
+	///////////////// SET PARAMETER VALUES //////////////////
 
-	// analysis: find balance & correlation
-	balance = BlumFollowBalance.ar(inSig, numSamps, method: 'average');
-	correlation = BlumFollowCorrelation.ar(inSig, numSamps, method: 'average');
+	// common values...
+	dur = 15.0;
+	gain = -6.0;
 
-	dispSig = [balance, correlation];
+	///////////////// EXAMPLES //////////////////
 
-	dispSig = ((1.0 - radius) * dispSig) + (radius * circle);  // add the "noisy circle"
-	dispSig = [-1, 1] * dispSig;  // remap for X/Y display
+	// Uncomment one of the following synths:
 
-    // outputs here
-    Out.ar(
-        dispBus, // analysis send out
-        dispSig
-    );
-}).add;
+	// Example 1
+	//
+	// mono pink noise - pan from -S to +S
+	//
+	// same as PAN!
+	//
+	// write envelope values to control bus
+	envCtrl = Synth.new(
+		defName: \envCtrl,
+		args: [
+			\dur, dur,
+			\panStart, -90.0.degrad, \panEnd, 90.0.degrad,
+			\widthStart, -45.0.degrad, \widthEnd, -45.0.degrad,
+			\ctrlBus, ctrlBus.index
+		],
+		target: group,
+		addAction: \addToHead
+	);
 
-
-///////////////// SET VARIABLE VALUES //////////////////
-
-// create the sendBus: a two channel (stereo) bus
-dispBus = Bus.control(server: s, numChannels: 2);
-
-// control bus for pan and width angle parameters
-ctrlBus = Bus.control(server: s, numChannels: 2);
-
-// create a node group
-group = Group.new();
-
-///////////////// SET PARAMETER VALUES //////////////////
-
-// common values...
-start = 0.0;
-dur = 20.0;
-gain = -6.0;
-
-///////////////// EXAMPLES //////////////////
-
-// Example 1
-//
-// mono pink noise - pan from -S to +S
-//
-// same as PAN!
-//
-// write envelope values to control bus
-Synth.new(
+	// Example 2
+	//
+	// partially decorrelated pink noise - pan from -S to +S
+	//
+	// ROTATE a stereo image
+	//
+	// write envelope values to control bus
+	/*envCtrl = Synth.new(
 	defName: \envCtrl,
 	args: [
-		\dur, dur,
-		\panStart, -90.0.degrad, \panEnd, 90.0.degrad,
-		\widthStart, -45.0.degrad, \widthEnd, -45.0.degrad,
-		\ctrlBus, ctrlBus.index
+	\dur, dur,
+	\panStart, -90.0.degrad, \panEnd, 90.0.degrad,
+	\widthStart, -22.5.degrad, \widthEnd, -22.5.degrad,
+	\ctrlBus, ctrlBus.index
 	],
 	target: group,
 	addAction: \addToHead
-);
+	);*/
 
-// Example 2
-//
-// partially decorrelated pink noise - pan from -S to +S
-//
-// ROTATE a stereo image
-//
-// write envelope values to control bus
-/*Synth.new(
+
+	// Example 3
+	//
+	// mono - decorrelated - mono pink noise - pan from +R to +L
+	//
+	// same as BALANCE!
+	//
+	// write envelope values to control bus
+	/*envCtrl = Synth.new(
 	defName: \envCtrl,
 	args: [
-		\dur, dur,
-		\panStart, -90.0.degrad, \panEnd, 90.0.degrad,
-		\widthStart, -22.5.degrad, \widthEnd, -22.5.degrad,
-		\ctrlBus, ctrlBus.index
+	\dur, dur,
+	\panStart, -45.degrad, \panEnd, -45.degrad,
+	\widthStart, -45.0.degrad, \widthEnd, 45.0.degrad,
+	\ctrlBus, ctrlBus.index
 	],
 	target: group,
 	addAction: \addToHead
-);*/
+	);*/
 
 
-// Example 3
-//
-// mono - decorrelated - mono pink noise - pan from +R to +L
-//
-// same as BALANCE!
-//
-// write envelope values to control bus
-/*Synth.new(
+	// Example 4
+	//
+	// mono - decorrelated - mono pink noise - pan from +M to +S
+	//
+	// same as WIDTH!
+	//
+	// write envelope values to control bus
+	/*envCtrl = Synth.new(
 	defName: \envCtrl,
 	args: [
-		\dur, dur,
-		\panStart, -45.degrad, \panEnd, -45.degrad,
-		\widthStart, -45.0.degrad, \widthEnd, 45.0.degrad,
-		\ctrlBus, ctrlBus.index
+	\dur, dur,
+	\panStart, 0.degrad, \panEnd, 0.degrad,
+	\widthStart, -45.0.degrad, \widthEnd, 45.0.degrad,
+	\ctrlBus, ctrlBus.index
 	],
 	target: group,
 	addAction: \addToHead
-);*/
+	);*/
 
+	// play synth, reading values from control bus
+	pink = Synth.new(
+		defName: \pink,
+		args: [\dur, dur, \gain, gain, \outBus, outBus.index, \ctrlBus, ctrlBus.index],
+		target: group,
+		addAction: \addToTail
+	);
 
-// Example 4
-//
-// mono - decorrelated - mono pink noise - pan from +M to +S
-//
-// same as WIDTH!
-//
-// write envelope values to control bus
-/*Synth.new(
-	defName: \envCtrl,
-	args: [
-		\dur, dur,
-		\panStart, 0.degrad, \panEnd, 0.degrad,
-		\widthStart, -45.0.degrad, \widthEnd, 45.0.degrad,
-		\ctrlBus, ctrlBus.index
-	],
-	target: group,
-	addAction: \addToHead
-);*/
+	// write to display bus
+	analySynth = Synth.new(
+		defName: \analySynth,
+		args: [\dur, dur, \receiveBus, outBus.index, \dispBus, dispBus.index],
+		target: group,
+		addAction:\addToTail
+	);
 
-// play synth, reading values from control bus
-Synth.new(
-	defName: \pink,
-	// args: [\dur, dur, \gain, gain, \panAngle, panAngle, \widthAngle, widthAngle]
-	args: [\dur, dur, \gain, gain, \ctrlBus, ctrlBus.index],
-	target: group,
-	addAction: \addToTail
-);
+	// view the analysis, using the X/Y scope
+	server.scope(2, index: dispBus.index).style_(2);
 
-// write to display bus
-Synth.new(
-	defName: \analySynth,
-	args: [\dur, dur, \dispBus, dispBus.index],
-	target: group,
-	addAction:\addToTail
-);
-
-// view the analysis, using the X/Y scope
-s.scope(2, index: dispBus.index).style = 2;
-
-// free the bus...
-(
-fork {
+	// free the buses, group etc...
 	dur.wait;
+	analySynth.free;
 	ctrlBus.free;
-	group.freeAll;
-}
-)
+	outBus.free;
+	group.free;
+})
+
 
 )
 ::
+::
 
 
-section::References
+section::Further Reading
 
 numberedlist::
 

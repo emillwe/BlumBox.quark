@@ -26,15 +26,15 @@ INSTANCEMETHODS::
 
 EXAMPLES::
 
+NOTE:: In this example, we define an MS input, with sinusoids in the middle channel and percussive noise in the side. Uncomment one of the signals at the bottom to compare the input with its asymmetry transform.::
+
 code::
 (
-~mPanTest = {
+~asymTest = {
 	var in, out;
 	var env;
 	var lfo;
 	var m, s;
-
-	// Inputs
 
 	env = EnvGen.kr(
 		envelope: Env.perc(releaseTime: 0.3),
@@ -53,7 +53,7 @@ code::
 
 	out = BlumAsym.ar(in, lfo);
 
-	// compare in/out signals
+	// Select one: compare in/out signals
 	// in
 	out
 

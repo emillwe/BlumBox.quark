@@ -16,6 +16,8 @@ The stereo input, an array: [L, R]
 ARGUMENT:: size
 Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
 
+Note:: For instantaneous analysis, size must be a power of two!::
+
 ARGUMENT:: method
 code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
 
@@ -31,42 +33,46 @@ table::
 EXAMPLES::
 
 code::
-// Run for 3s and plot
 (
 ~balanceTest = {
-	var in, out;
-	var lfo;
-	var instant, average;
-	var makeUpDelay;
-	var size = 2048;
-	var halfSize = (size / 2).asInteger;
+    var in, out;
+    var lfo;
+    var instant, average;
+    var makeUpDelay;
+    var size = 2048;
+    var halfSize = (size / 2).asInteger;
 
-	// Inputs
-	in = SinOsc.ar(440);
+    // Inputs
+    in = SinOsc.ar(440);
 
-	// LFOs
-	lfo = SinOsc.kr(0.3);
-	// lfo = 1;  // fixed, left
-	// lfo = 0;  // fixed, center
-	// lfo = -1;  // fixed, left
+    // LFOs
+    lfo = SinOsc.kr(0.3);
+    // lfo = 1;  // fixed, left
+    // lfo = 0;  // fixed, center
+    // lfo = -1;  // fixed, left
 
-	// create time-varying stereo input
-	in = Pan2.ar(in, lfo);
+    // create time-varying stereo input
+    in = Pan2.ar(in, lfo);
 
-	// Instant and average output
-	instant = BlumFollowBalance.ar(in, size, \instant);
-	average = BlumFollowBalance.ar(in, size, \average);
+    // Instant and average output
+    instant = BlumFollowBalance.ar(in, size, \instant);
+    average = BlumFollowBalance.ar(in, size, \average);
 
-	// match delay of instant and average for comparison
-	makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
-	average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+    // match delay of instant and average for comparison
+    makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
+    average = DelayN.ar(average, makeUpDelay, makeUpDelay);
 
-	// Compare instant vs average
-	// out = (instant.neg + average);
-	out = instant;
-	// out = average;
+    // Select one: compare instant vs average
+    out = instant;
+    // out = average;
+    // out = (instant.neg + average); // difference between instantaneous and average
 
-	out.poll
-}.plot(3)
+	// write analyzed angle to post window
+	out.poll(label: "analyzed");
+
+	// listen to source
+	in
+
+}.play()
 )
 ::

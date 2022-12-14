@@ -22,6 +22,9 @@ returns:: Middle-panned signal, an array: [L, R]
 
 EXAMPLES::
 
+NOTE:: In this example, we define an MS input, with a percussive sinusoid in the middle channel and noise in the side. Uncomment one of the signals at the bottom to compare the input with its M-Pan transform.::
+
+
 code::
 (
 ~mPanTest = {
@@ -49,7 +52,7 @@ code::
 
 	out = BlumMPan.ar(in, lfo);
 
-	// compare in/out signals
+	// Select one: compare in/out signals
 	// in
 	out
 

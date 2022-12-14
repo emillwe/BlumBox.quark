@@ -14,7 +14,10 @@ ARGUMENT:: in
 The stereo input, an array: [L, R]
 
 ARGUMENT:: size
+
 Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
+
+Note:: For instantaneous analysis, size must be a power of two!::
 
 ARGUMENT:: method
 code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
