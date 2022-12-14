@@ -1,0 +1,61 @@
+TITLE:: BlumMPan
+summary:: Stereo middle pan transform
+categories:: Libraries>Blumlein Box>Transforms, UGens>MultiChannel>Panners
+related:: Classes/BlumAsym
+
+DESCRIPTION::
+Middle pan is a rotation of the M-axis with the S-axis left in place.
+
+
+CLASSMETHODS::
+
+METHOD:: ar, kr
+
+ARGUMENT:: in
+The stereo input, an array: [L, R]
+
+ARGUMENT:: angle
+Middle pan angle in radians between -pi/4, pi/4
+
+returns:: Middle-panned signal, an array: [L, R]
+
+
+EXAMPLES::
+
+NOTE:: In this example, we define an MS input, with a percussive sinusoid in the middle channel and noise in the side. Uncomment one of the signals at the bottom to compare the input with its M-Pan transform.::
+
+
+code::
+(
+~mPanTest = {
+	var in, out;
+	var env;
+	var lfo;
+	var m, s;
+
+	// Inputs
+
+	env = EnvGen.kr(
+		envelope: Env.perc(releaseTime: 0.3),
+		gate: Impulse.kr(4.0);
+	);
+
+	// ms input
+	m = SinOsc.ar(440, mul: 0.3) * env;
+	s = PinkNoise.ar(0.5);
+
+	in = BlumMStoLR.ar([m, s]);
+
+	// LFOs
+	// lfo = LFTri.kr(0.3).range(-pi/4, pi/4); // standard bounds
+	lfo = LFSaw.kr(0.1).range(0, 2pi); // full rotation of m-channel
+
+	out = BlumMPan.ar(in, lfo);
+
+	// Select one: compare in/out signals
+	// in
+	out
+
+}.play
+)
+::

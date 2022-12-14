@@ -1,0 +1,66 @@
+TITLE:: BlumFollowAngle
+summary:: Stereo angle analysis
+categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
+related:: Classes/BlumFollowRadius
+
+DESCRIPTION::
+Measure the encoding angle of a stereo source.
+
+CLASSMETHODS::
+
+METHOD:: ar, kr
+
+ARGUMENT:: in
+The stereo input, an array: [L, R]
+
+ARGUMENT:: size
+
+Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
+
+Note:: For instantaneous analysis, size must be a power of two!::
+
+ARGUMENT:: method
+code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
+
+returns::
+Signal encoding angle
+
+EXAMPLES::
+
+code::
+(
+~angleTest = {
+	var in;
+	var lfo;
+	var rotated;
+	var analysis;
+
+	// input: pink noise
+	in = PinkNoise.ar([0.3, 0.3]);
+
+	// make L and R channels identical (i.e. fully correlated)
+	// NOTE: All Blumlein Box UGens require a 2-channel input.
+	// Without this transformation, rotation will not be apparent with a noise input
+	in = BlumWidth.ar(in, -45);
+
+	// Rotation modulator: sinusoid between L and R bounds
+	lfo = SinOsc.kr(0.1).range(-45.degrad, 45.degrad);
+
+	// rotate input signal
+	// NOTE: rotating a fully correlated signal is identical to panning!
+	rotated = BlumRotate.ar(in, lfo);
+
+	// analyze angle of rotated signal
+	analysis = BlumFollowAngle.ar(
+		in: rotated,
+		method: 'average'
+	);
+
+	// post analysis in degrees
+	analysis.raddeg.poll(label: "analyzed");
+
+	// listen to rotated signal
+	rotated
+}.play
+)
+::

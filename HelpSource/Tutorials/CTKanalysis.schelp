@@ -1,0 +1,244 @@
+title:: Stereo Imaging Analysis with the Composer's Toolkit
+summary:: CTK stereo analysis demos
+categories:: Libraries>Blumlein Box
+keyword::BlumBox
+
+section::Realtime Example
+
+We'll render this in realtime. Go ahead and start the realtime server:
+
+code::
+
+(
+var scope;
+var numChannels = 2;
+
+// start server!
+Server.default = s = Server.local.boot; // use this for SC-IDE
+scope = Stethoscope.new(s, numChannels);
+
+// display!
+scope = Stethoscope.new(s, numChannels);
+scope.style = 2; // Lissajous display
+)
+
+::
+
+____________________
+
+Once the realtime server is booted, evaluate the codeblock below. Notice, there are several example note calls to try.
+
+note::Un-comment only one note example at a time!::
+
+code::
+// PinkNoise - Balance & Correlation display
+(
+
+///////////////// DEFINE VARIABLES //////////////////
+
+var score, pinkSynthDef, analyDef;
+var start, dur, gain, panAngle, widthAngle;
+var dispBus, group;
+
+///////////////// DEFINE SYNTHS //////////////////
+
+pinkSynthDef = CtkSynthDef.new(\pink, { |dur, gain = 0.0, ris = 0.01, dec = 0.01, panAngle = 0.0, widthAngle = 0.0|
+    var bus = 0;      // var to specify output bus: first output
+    var amp;          // a few vars for synthesis
+    var sig, out;     // vars assigned to audio signals
+    var ampEnv;       // var for envelope signal
+
+
+    // calcs
+    amp = gain.dbamp;  // convert from gain in dB to linear amplitude scale
+
+    // the amplitude envelope nested in the UGen that synthesises the envelope
+    ampEnv = EnvGen.kr(
+        Env.linen(ris, 1.0 - (ris + dec), dec),
+        timeScale: dur
+    );
+
+    // generate test signal, decorrelated PinkNoise
+    sig = PinkNoise.ar([1, 1]);  // <-- Imaging happens here!
+
+    // spatial filter - width & rotate
+	sig = BlumWidth.ar(sig, widthAngle);  // <-- And here!
+	sig = BlumRotate.ar(sig, panAngle);  // <-- And here!
+
+
+    // post rotation angle (for display)
+    panAngle.raddeg.poll(label: "rotation___");  // <-- Quote this out if you don't want to post the angle
+
+    // apply envelope
+    sig = amp * ampEnv * sig;
+
+    // imaged
+    out = sig;
+
+    // out!!
+    Out.ar(bus, out)
+});
+
+
+// a simple synthDef to analize the stereo image
+// in terms of stereo balance and correlation
+// we'll use SC3's X/Y scope to view!
+analyDef = CtkSynthDef.new(\analySynth, { |dur, aveTime = 0.005, radius = 0.1, receiveBus = 0, dispBus|
+    var inSig, dispSig;
+    var numChannels = 2;
+    var circle;
+	var balance, correlation;
+	var numSamps = aveTime * SampleRate.ir;
+
+    // generate "noisy circle"
+    circle = (SinOsc.ar(ControlRate.ir, [pi/2, 0.0]) * LFNoise2.ar(ControlRate.ir, [1, 1]));
+
+    // receive test signal
+    inSig = In.ar(receiveBus, numChannels);
+
+    // analysis - find angle in degrees (for display)
+    BlumFollowAngle.ar(
+		in: inSig,
+		size: numSamps,
+		method: 'average'
+	).raddeg.poll(label: "analyzed");  // <-- Quote this out if you don't want to post the angle
+
+	// analysis - find balance & correlation
+	balance  = BlumFollowBalance.ar(
+		in: inSig,
+		size: numSamps,
+		method: 'average'
+	);
+
+	correlation  = BlumFollowCorrelation.ar(
+		in: inSig,
+		size: numSamps,
+		method: 'average'
+	);
+
+
+	dispSig = [balance, correlation]; // for display
+    dispSig = ((1.0 - radius) * dispSig) + (radius * circle);  // add the "noisy circle"
+    dispSig = [-1, 1] * dispSig;  // remap for X/Y display
+
+    // outputs here
+    Out.ar(
+        dispBus, // analysis send out
+        dispSig
+    );
+});
+
+
+///////////////// SET VARIABLE VALUES //////////////////
+
+// create a score
+score = CtkScore.new;
+
+
+// create the sendBus
+dispBus = CtkAudio.new(2); // a two channel (stereo) bus...
+                           // ... which is what we'll be sending!
+
+// create a node group
+group = CtkGroup.new;
+
+
+///////////////// SET PARAMETER VALUES //////////////////
+
+// common values...
+start = 0.0;
+dur = 20.0;
+gain = -6.0;
+
+
+// Example 1
+//
+// mono pink noise - pan from -S to +S
+//
+// same as PAN!
+//
+panAngle = CtkControl.env(Env.new([-90.0, 90.0].degrad, [1.0], \lin), timeScale: dur);
+widthAngle = -45.0.degrad;
+
+
+// // Example 2
+// //
+// // partially decorrelated pink noise - pan from -S to +S
+// //
+// // ROTATE a stereo image
+// //
+// panAngle = CtkControl.env(Env.new([-90.0, 90.0].degrad, [1.0], \lin), timeScale: dur);
+// widthAngle = -22.5.degrad;
+
+
+// // Example 3
+// //
+// // mono - decorrelated - mono pink noise - pan from +R to +L
+// //
+// // same as BALANCE!
+// //
+// panAngle = -45.0.degrad;
+// widthAngle = CtkControl.env(Env.new([-45.0, 45.0].degrad, [1.0], \lin), timeScale: dur);
+
+
+// // Example 4
+// //
+// // mono - decorrelated - mono pink noise - pan from +M to +S
+// //
+// // same as WIDTH!
+// //
+// panAngle = 0.0.degrad;
+// widthAngle = CtkControl.env(Env.new([-45.0, 45.0].degrad, [1.0], \lin), timeScale: dur);
+
+
+///////////////// POPULATE THE SCORE //////////////////
+
+// add to score
+score.add(group);
+score.add(dispBus);
+
+// define the note / add to score
+// a single note
+score.add(
+    pinkSynthDef.note(starttime: start, duration: dur)
+    .dur_(dur)
+    .gain_(gain)
+    .panAngle_(panAngle)
+    .widthAngle_(widthAngle)
+);
+
+
+
+
+// analysis
+score.add(
+    analyDef.note(starttime: start, duration: dur, addAction: \tail, target: group)
+    .dur_(dur)
+    .dispBus_(dispBus)
+);
+
+
+// view the analysis, using the X/Y scope
+s.scope(2, index: dispBus.bus).style = 2;
+
+///////////////// PLAY THE SCORE //////////////////
+
+// play the score
+score.play;
+
+
+// free
+dispBus.free;
+)
+::
+
+
+section::References
+
+numberedlist::
+
+## Streicher, Ron., and F. Alton Everest. The New Stereo Soundbook. Audio Engineering Associates, 2006.
+
+## American reprint: Blumlein, A. D. (1958). "British Patent Specification 394,325 'Improvements in and relating to Sound-transmission, Sound-recording and Sound-reproducing Systems'" link::http://decoy.iki.fi/dsound/ambisonic/motherlode/source/British%20patent%20specification%20394325%20Blumlein%201933.pdf:: (PDF). Journal of the Audio Engineering Society. 6 (2): 32–40.
+
+::

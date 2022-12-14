@@ -4,37 +4,68 @@ categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel>Panners
 related:: Classes/BlumBalance, Classes/BlumWidth
 
 DESCRIPTION::
-Rotation is a true stereo panning algorithm, accepting a stereo input and returning a stereo output. It is the stereo equivalent of the sine-cosine panning law. In the cartesian plane, if the listener is facing 0 degrees, rotation orients a stereo signal
+Rotation is a true stereo panning algorithm, accepting a stereo input and returning a stereo output. It is the stereo equivalent of the sine-cosine panning law. In the cartesian plane, rotation orients a stereo signal with respect to the x-axis (i.e. the listener's perspective) in radians.
+
+BlumRotate is a wrapper for the inbuilt link::Classes/Rotate2::.
 
 CLASSMETHODS::
 
-METHOD:: ar
-(describe method here)
+METHOD:: ar, kr
 
-ARGUMENT:: in
-(describe argument here)
+argument:: in
+The stereo input, an array: [L, R]
 
-ARGUMENT:: angle
-(describe argument here)
+argument:: angle
+Rotation angle in radians between -pi/2, pi/2
 
-returns:: (describe returnvalue here)
+returns::
+Stereo rotated signal, an array: [L, R]
 
-METHOD:: kr
-(describe method here)
 
-ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-INSTANCEMETHODS::
-
+DISCUSSION::
+BlumRotate's angle input is measured from the listener's perspective at zero radians. A rotation of -pi/2 will place an M-channel signal in the -S channel. Additionally, stereo rotation may be used as a basis for other stereo transforms.
 
 EXAMPLES::
 
+Contrast full stereo rotation with link::Classes/BlumBalance::.
+
 code::
-(some example code)
+(
+~rotTest = {
+	var in, inL, inR;
+	var out;
+	var lfo;
+	var env1, env2;
+	var freqMod;
+
+	freqMod = LFNoise2.kr(3.3).range(0.99, 1.01);
+
+	// L and R channels
+	inL = SinOsc.ar(440 * freqMod, mul: 0.3);
+	inR = SinOsc.ar(330 * freqMod, mul: 0.3);
+
+	// L and R envelopes
+	#env1, env2 = EnvGen.kr(
+		Env.perc(releaseTime: 0.3),
+		Impulse.kr([5, 3])
+	);
+
+	// Stereo input
+	in = [
+		inL * env1,
+		inR * env2
+	];
+
+	lfo = LFSaw.kr(0.1).range(0, 2pi);
+
+	out = BlumRotate.ar(
+		in: in,
+		angle: lfo
+	);
+
+	// compare in/out signals
+	// in
+	out
+}.play
+)
 ::

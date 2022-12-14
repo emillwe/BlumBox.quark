@@ -1,0 +1,73 @@
+TITLE:: BlumFollowCorrelation
+summary:: Stereo correlation analysis
+categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
+related:: Classes/BlumFollowBalance
+
+DESCRIPTION::
+Analyze the degree of similarity between left and right channels of a stereo signal. Correlation is the distribution of power along the M-S axis.
+
+
+CLASSMETHODS::
+
+METHOD:: ar, kr
+
+ARGUMENT:: in
+The stereo input, an array: [L, R]
+
+ARGUMENT:: size
+Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
+
+Note:: For instantaneous analysis, size must be a power of two!::
+
+ARGUMENT:: method
+code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
+
+returns::
+Stereo correlation: a value on the interval [-1, 1]. A return value of -1 corresponds to L and R channels fully out of phase, while identical L and R channels will return 1. L and R signals in quadrature will return a correlation of 0.
+
+table::
+## emphasis::position:: || strong::middle:: || strong::de-correlated:: || strong::side::
+## emphasis::value:: || code::1.0:: || code::0.0:: || code::-1.0::
+::
+
+EXAMPLES::
+
+code::
+(
+~correlationTest = {
+    var in, out;
+	var phaseLfo;
+    var instant, average;
+    var size = 2048;  // default
+    var makeUpDelay;
+    var halfSize = (size / 2).asInteger;
+
+	phaseLfo = SinOsc.kr(0.1).range(0, pi);
+
+	// analysis input: oscillate between fully correlated and fully decorrelated
+	in = SinOsc.ar([330, 330], phase: [0, phaseLfo], mul: 0.3);
+
+    // Instant and average output
+    instant = BlumFollowCorrelation.ar(in, size, \instant);
+    average = BlumFollowCorrelation.ar(in, size, \average);
+
+    // match delay of instant and average for comparison
+    makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
+    average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+
+    // Select one: ompare instant vs average
+    // out = average;
+    out = instant;
+    // out = (instant.neg + average); // difference between instantaneous and average
+
+	// write analysis to post window
+	out.poll(label: "analyzed");
+
+	// listen to source
+	in
+
+}.play()
+)
+::
+
+NOTE:: How does the apparent stereo image change as the correlation between L and R channels changes?::

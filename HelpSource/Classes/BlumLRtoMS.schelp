@@ -1,36 +1,51 @@
 TITLE:: BlumLRtoMS
-summary:: (put short description here)
-categories:: Undocumented classes, UGens>Undocumented
-related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+summary:: MS domain transform
+categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel
+related:: Classes/BlumMStoLR
 
 DESCRIPTION::
-(put long description here)
+Transform an LR domain stereo signal to the MS domain.
 
 
 CLASSMETHODS::
 
-METHOD:: kr
-(describe method here)
+METHOD:: ar, kr
 
-ARGUMENT:: in
-(describe argument here)
+argument: in
+The stereo input, an array: [L, R]
 
-returns:: (describe returnvalue here)
-
-METHOD:: ar
-(describe method here)
-
-ARGUMENT:: in
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-
-INSTANCEMETHODS::
-
+returns::
+MS domain signal, an array: [M, S]
 
 EXAMPLES::
+Transformation between MS and LR domains can give the user more flexibility with
+spatial processing.
 
 code::
-(some example code)
+(
+// Processing in the MS domain: wide AM
+~msTest = {
+    var in, out;
+    var mid, side;
+
+    // stereo input
+    in = LFSaw.ar([219, 221], mul: 0.3);
+
+    // transform to MS domain
+    #mid, side = BlumLRtoMS.ar(in);
+
+	// apply LFO only to S channel
+	side = SinOsc.kr(220 / 4,0) * side;
+
+    // recompose MS signal
+    out = [mid, side];
+
+    // transform back to LR domain
+    out = BlumMStoLR.ar(out);
+
+    // compare in/out signals
+	// in
+	out
+}.play
+)
 ::

@@ -1,0 +1,78 @@
+TITLE:: BlumFollowBalance
+summary:: Stereo balance analysis
+categories:: Libraries>Blumlein Box>Analyses, UGens>Analysis
+related:: Classes/BlumBalance, Classes/BlumFollowCorrelation
+
+DESCRIPTION::
+Analyze the balance of a stereo signal. Balance is the distribution of power along the L-R axis.
+
+CLASSMETHODS::
+
+METHOD:: ar, kr
+
+ARGUMENT:: in
+The stereo input, an array: [L, R]
+
+ARGUMENT:: size
+Number of samples for Hilbert window (i.e. FFT size) or running sum. See link::Classes/RunningSum:: and link::Classes/HilbertW:: for more info.
+
+Note:: For instantaneous analysis, size must be a power of two!::
+
+ARGUMENT:: method
+code::\instant:: for instantaneous analysis or code::\average:: for time-averaged analysis
+
+returns::
+Stereo balance: a value on the interval [-1, 1]. The bounds correspond respectively to power fully in the right or left channel.
+
+table::
+## emphasis::position:: || strong::left:: || strong::center:: || strong::right::
+## emphasis::value:: || code::1.0:: || code::0.0:: || code::-1.0::
+::
+
+
+EXAMPLES::
+
+code::
+(
+~balanceTest = {
+    var in, out;
+    var lfo;
+    var instant, average;
+    var makeUpDelay;
+    var size = 2048;
+    var halfSize = (size / 2).asInteger;
+
+    // Inputs
+    in = SinOsc.ar(440);
+
+    // LFOs
+    lfo = SinOsc.kr(0.3);
+    // lfo = 1;  // fixed, left
+    // lfo = 0;  // fixed, center
+    // lfo = -1;  // fixed, left
+
+    // create time-varying stereo input
+    in = Pan2.ar(in, lfo);
+
+    // Instant and average output
+    instant = BlumFollowBalance.ar(in, size, \instant);
+    average = BlumFollowBalance.ar(in, size, \average);
+
+    // match delay of instant and average for comparison
+    makeUpDelay = ((halfSize * SampleDur.ir) - ControlDur.ir);
+    average = DelayN.ar(average, makeUpDelay, makeUpDelay);
+
+    // Select one: compare instant vs average
+    out = instant;
+    // out = average;
+    // out = (instant.neg + average); // difference between instantaneous and average
+
+	// write analyzed angle to post window
+	out.poll(label: "analyzed");
+
+	// listen to source
+	in
+
+}.play()
+)
+::

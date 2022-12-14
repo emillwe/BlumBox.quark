@@ -1,42 +1,44 @@
 TITLE:: BlumRPan
-summary:: (put short description here)
-categories:: Undocumented classes, UGens>Undocumented
-related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+summary:: Stereo right pan
+categories:: Libraries>Blumlein Box>Transforms, UGens>Multichannel>Panners
+related:: Classes/BlumLPan
 
 DESCRIPTION::
-(put long description here)
-
+Rotate the right axis of a stereo signal, leaving the left axis in place.
 
 CLASSMETHODS::
 
-METHOD:: kr
-(describe method here)
+METHOD:: ar, kr
 
 ARGUMENT:: in
-(describe argument here)
+The stereo input, an array: [L, R]
 
 ARGUMENT:: angle
-(describe argument here)
+Right pan angle in radians
 
-returns:: (describe returnvalue here)
-
-METHOD:: ar
-(describe method here)
-
-ARGUMENT:: in
-(describe argument here)
-
-ARGUMENT:: angle
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-
-INSTANCEMETHODS::
-
+returns::
+Stereo right panned signal, an array: [L, R]
 
 EXAMPLES::
 
 code::
-(some example code)
+(
+~rPanTest = {
+
+	var in, out;
+	var lfo;
+
+	// Inputs
+	in = SinOsc.ar([330, 440], mul: 0.3);
+
+	// LFOs
+	lfo = LFTri.kr(0.3).range(-pi/2, pi/2); // wide bounds
+
+	out = BlumRPan.ar(in, lfo);
+
+	// compare in/out signals
+	// in
+	out
+}.play
+)
 ::

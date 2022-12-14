@@ -135,15 +135,13 @@ BlumMStoLR : BlumUGen {
 	}
 }
 
-// TODO: Sin-Cos pan, panMS
-
 //-----------------------------------------------------------------------
 // wrapper for Rotate2, using stereo input and degree arguments
 
 /*
 ///// args /////
 in: stereo input signal
-angle: rotation angle in radians, from perspective along x-axis. Wraps around [-pi, pi]
+angle: rotation angle in radians, from perspective along x-axis (towards M). Wraps around [-pi, pi]
 
 ///// returns ////
 stereo rotated signal
@@ -156,10 +154,8 @@ BlumRotate : BlumUGen {
 	*ar { |in, angle|
 		var left, right;
 
-		// TODO: check for degrees input?
-
 		// normalize radians for Rotate2 pos argument
-		var pos = angle / -pi;
+		var pos = angle / pi;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
@@ -189,7 +185,7 @@ BlumRotate : BlumUGen {
 		var left, right;
 
 		// normalize radians for Rotate2 pos argument
-		var pos = angle / -pi;
+		var pos = angle / pi;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
@@ -207,7 +203,8 @@ BlumRotate : BlumUGen {
 /*
 ///// args /////
 in: stereo input signal
-angle: width angle in radians, from perspective along x-axis. Limits [-pi/4, pi/4]
+angle: width angle in radians. pi/4 will collapse the input to the S axis,
+while -pi/4 will collapse the input to the M axis.
 
 ///// returns /////
 stereo widened/narrowed signal
@@ -262,14 +259,13 @@ BlumWidth : BlumUGen {
 }
 
 //-----------------------------------------------------------------------
-// TODO: Better class description
 // rotate M and S channels towards or away the L-axis
 
 /*
 ///// args /////
 in: stereo input signal
-angle: balance angle in radians, from perspective along x-axis. Limits [-pi/4, pi/4]
-TODO: Check angle limits
+angle: balance angle in radians. pi/4 will collapse the input to the L axis,
+while -pi/4 will collapse the input to the R axis.
 
 ///// returns ////
 stereo balanced signal
@@ -298,8 +294,7 @@ BlumBalance : BlumUGen {
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		inM = in[0];
-		inS = in[1];
+		#inM, inS = in;
 
 		balM = (angle.cos * inM) + (angle.sin * inS);
 		balS = (angle.sin * inM) + (angle.cos * inS);
@@ -325,25 +320,28 @@ BlumBalance : BlumUGen {
 
 //-----------------------------------------------------------------------
 // rotate only the M-axis, keeping the S-axis in place
+
 /*
 ///// args /////
-in: MS-domain signal in the format [M, S]
-angle: mPan angle in radians, from perspective along x-axis. Limits [-pi/2, pi/2]
-TODO: Check angle limits
+in: stereo input signal
+angle: mPan angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
-M-panned MS signal in the format [M, S]
+m-panned signal
 */
 
 BlumMPan : BlumUGen {
 	*arMS { |in, angle|
+		var inM, inS;
 		var mPanM, mPanS;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		mPanM = in[0] * angle.cos;
-		mPanS = in[0] * angle.sin + in[1];
+		#inM, inS = in;
+
+		mPanM = inM * angle.cos;
+		mPanS = inM * angle.sin + inS;
 
 		^[mPanM, mPanS]
 	}
@@ -383,27 +381,28 @@ BlumMPan : BlumUGen {
 
 //-----------------------------------------------------------------------
 // rotate only the S-axis, keeping the M-axis in place
+
 /*
 ///// args /////
-in: MS-domain signal in the format [M, S]
-angle: asymmetry angle in radians, from perspective along x-axis. Limits [-pi/2, pi/2]
-TODO: Check angle limits
+in: stereo input signal
+angle: asymmetry angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
-Asymmetry-transformed MS signal in the format [M, S]
-
-TODO: include BlumMPanLR? name just BlumMPan?
+asymmetry-transformed signal
 */
 
 BlumAsym : BlumUGen {
 	*arMS { |in, angle|
+		var inM, inS;
 		var asymM, asymS;
 
 		// check input has two channels (i.e. [M, S])
 		this.confirmStereoInputs(in);
 
-		asymM = in[0] - (in[1] * angle.sin);
-		asymS = in[1] * angle.cos;
+		#inM, inS = in;
+
+		asymM = inM - (inS * angle.sin);
+		asymS = inS * angle.cos;
 
 		^[asymM, asymS]
 	}
@@ -449,21 +448,23 @@ BlumAsym : BlumUGen {
 /*
 ///// args /////
 in: stereo signal
-angle: R-pan angle in radians, from perspective along x-axis.
-TODO: Check angle limits
+angle: R-pan angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
-R-panned stereo signal
+R-panned signal
 */
 BlumRPan : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
 		var rPanL, rPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		rPanL = in[0] + (in[1] * angle.sin);
-		rPanR = in[1] * angle.cos;
+		#left, right = in;
+
+		rPanL = left + (right * angle.sin);
+		rPanR = right * angle.cos;
 
 		^[rPanL, rPanR]
 	}
@@ -486,13 +487,16 @@ BlumRPan : BlumUGen {
 	}
 
 	*kr { |in, angle|
+		var left, right;
 		var rPanL, rPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		rPanL = in[0] + (in[1] * angle.sin);
-		rPanR = in[1] * angle.cos;
+		#left, right = in;
+
+		rPanL = left + (right * angle.sin);
+		rPanR = right * angle.cos;
 
 		^[rPanL, rPanR]
 	}
@@ -504,8 +508,7 @@ BlumRPan : BlumUGen {
 /*
 ///// args /////
 in: stereo signal
-angle: L-pan angle in radians, from perspective along x-axis.
-TODO: Check angle limits
+angle: L-pan angle in radians. Limits: [-pi/2, pi/2]
 
 ///// returns ////
 L-panned stereo signal
@@ -513,13 +516,16 @@ L-panned stereo signal
 
 BlumLPan : BlumUGen {
 	*ar { |in, angle|
+		var left, right;
 		var lPanL, lPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		lPanL = in[0] * angle.cos;
-		lPanR = (in[0] * angle.sin).neg + in[1];
+		#left, right = in;
+
+		lPanL = left * angle.cos;
+		lPanR = (left * angle.sin).neg + right;
 		^[lPanL, lPanR]
 	}
 
@@ -541,13 +547,16 @@ BlumLPan : BlumUGen {
 	}
 
 	*kr { |in, angle|
+		var left, right;
 		var lPanL, lPanR;
 
 		// check input is stereo
 		this.confirmStereoInputs(in);
 
-		lPanL = in[0] * angle.cos;
-		lPanR = (in[0] * angle.sin).neg + in[1];
+		#left, right = in;
+
+		lPanL = left * angle.cos;
+		lPanR = (right * angle.sin).neg + right;
 		^[lPanL, lPanR]
 	}
 }

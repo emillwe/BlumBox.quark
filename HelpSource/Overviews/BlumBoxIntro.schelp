@@ -1,0 +1,93 @@
+title:: The Blumlein Box
+summary:: Blumlein Box, AKA BlumBox, a quark for stereo imaging transforms and analysis
+categories:: Libraries>Blumlein Box
+keyword::BlumBox
+
+section:: Introduction
+
+The Blumlein Box, AKA BlumBox, is a set of tools for the transformation and analysis of stereo signals. It includes commonly used transforms, such as stereo width and balance, as well as more obscure techniques, like asymmetry and middle panorama. The BlumBox provides an ergonomic stereo workflow for composers and purist recordists alike.
+
+section:: Acknowledgments
+
+Special thanks to Dr. Joseph Anderson, whose paper "Classical Stereo Imaging Transforms--A Review", serves as the basis for this work. The Blumlein Box was developed by Emmett Miller with Dr. Anderson for DXARTS, University of Washington.
+
+For a more detailed tutorial on the BlumBox and illustration of concepts presented in the above paper, see: link::Tutorials/StereoImagingTransformsIllustrated::
+
+section:: Example Workflows
+
+
+
+section:: Transforms
+
+The Blumlein Box implements the following 9 stereo transforms:
+
+subsection:: LR to MS
+
+link::Classes/BlumLRtoMS:: - Transforms a signal from the LR domain to the MS domain
+
+subsection:: MS to LR
+
+link::Classes/BlumMStoLR:: - Transforms a signal from the MS domain to the LR domain
+
+subsection:: Rotation
+
+link::Classes/BlumRotate:: - Rotates a stereo signal, preserving relative positions in the stereo field
+
+subsection:: Width
+
+link::Classes/BlumWidth:: - Widens or narrows a stereo signal
+
+subsection:: Balance
+
+link::Classes/BlumBalance:: - Stereo panning as implemented on most consumer electronics--compresses a stereo signal towards the L or R axis
+
+subsection:: Middle Panorama
+
+link::Classes/BlumMPan:: - Rotates the M-axis of a stereo image, leaving the S-axis in place
+
+subsection:: Asymmetry
+
+link::Classes/BlumAsym:: - Rotates the S-axis of a stereo image, leaving the M-axis in place
+
+subsection:: Left Panorama
+
+link::Classes/BlumLPan:: - Rotates only the L-axis of a stereo image
+
+subsection:: Right Panorama
+
+link::Classes/BlumRPan:: - Rotates only the R-axis of a stereo image
+
+section:: Analyses
+
+The Blumlein Box also includes the following 5 stereo imaging analysis functions. Each has the option to return either an instantaneous or time-average value.
+
+subsection:: Power
+
+link::Classes/BlumFollowPower:: - Returns the power of a stereo signal
+
+subsection:: Balance
+
+link::Classes/BlumFollowBalance:: - Stereo signal balance, i.e. the ratio of the S- to M-axis
+
+subsection:: Correlation
+
+link::Classes/BlumFollowCorrelation:: - Degree of similarity between left and right channels, i.e. the distribution of energy along the M-S axis.
+
+subsection:: Angle
+
+link::Classes/BlumFollowAngle:: - Apparent source direction of a stereo image in radians
+
+subsection:: Radius
+
+link::Classes/BlumFollowRadius:: - Encoding radius of a stereo image
+
+section:: Further Reading
+
+NUMBEREDLIST::
+## Anderson, J. L., "Classic Stereo Imaging Transforms: A Review", published in Spanish in Basso, G., Di Liscia, O. P. & Pampin, J. (editors)(2009). "Música y espacio: ciencia, tecnología y estética". Buenos Aires, Universidad Nacional de Quilmes.
+
+## Streicher, Ron., and F. Alton Everest. The New Stereo Soundbook. Audio Engineering Associates, 2006.
+
+## American reprint: Blumlein, A. D. (1958). "British Patent Specification 394,325 'Improvements in and relating to Sound-transmission, Sound-recording and Sound-reproducing Systems'" link::http://decoy.iki.fi/dsound/ambisonic/motherlode/source/British%20patent%20specification%20394325%20Blumlein%201933.pdf:: (PDF). Journal of the Audio Engineering Society. 6 (2): 32–40.
+
+::
