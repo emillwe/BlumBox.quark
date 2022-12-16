@@ -16,6 +16,11 @@ To install the quark, run the following in SuperCollider:
 Quarks.install("https://github.com/emillwe/BlumBox.quark.git");
 ```
 
+If you've already installed BlumBox, you can make sure all dependencies are up to date using the QuarksGui:
+```supercollider
+Quarks.gui
+```
+
 ## The Transforms
 The Blumlein Box implements the following 9 stereo transforms:
 
