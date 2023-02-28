@@ -4,7 +4,7 @@
 	\license:		"GPL",
 	\version:		"1.0.1",
 	\schelp:		"The-Blumlein-Box" ,
-	\url:			https://github.com/emillwe/BlumBox.quark
+	\url:			https://github.com/emillwe/BlumBox.quark,
 	\dependencies:	["Hilbert"],
 	\organization:	"UW DXARTS: https://dxarts.washington.edu/",
 	\since: "2022"
