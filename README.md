@@ -13,7 +13,7 @@ BlumBox.quark was developed on SuperCollider 3.12.2. Though previous versions ma
 
 To install the quark, run the following in SuperCollider:
 ```supercollider
-Quarks.install("https://github.com/emillwe/BlumBox.quark.git");
+Quarks.install("https://github.com/emillwe/BlumBox.quark");
 ```
 
 If you've already installed BlumBox, you can make sure all dependencies are up to date using the QuarksGui:
